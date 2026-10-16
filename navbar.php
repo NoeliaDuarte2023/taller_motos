@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // ========================================================
 // ARCHIVO: navbar.php
 // OBJETIVO: Barra de navegación común para todo el sistema
@@ -49,11 +49,6 @@ $currentScript = basename($_SERVER['PHP_SELF']);
                     </a>
                 </li>
             </ul>
-            <div class="d-flex">
-                <a href="nueva_moto.php" class="btn btn-success fw-bold shadow-sm d-flex align-items-center gap-1">
-                    <i class="bi bi-plus-circle-fill"></i> + Ingresar Moto
-                </a>
-            </div>
         </div>
     </div>
 </nav>

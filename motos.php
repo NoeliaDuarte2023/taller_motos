@@ -7,11 +7,10 @@
 
 require_once 'conexion.php';
 
-// Consultamos las motos que están en el taller (excluyendo o incluyendo entregadas según filtro)
+// Consultamos todas las motos registradas junto a sus clientes
 $sqlMotos = "SELECT m.*, c.nombre AS cliente_nombre, c.apellido AS cliente_apellido, c.telefono AS cliente_telefono, c.direccion AS cliente_direccion
              FROM motos m 
              INNER JOIN clientes c ON m.id_cliente = c.id_cliente 
-             WHERE m.estado != 'Entregado' OR m.estado IS NULL
              ORDER BY 
                 CASE 
                     WHEN m.estado = 'Terminado' THEN 1
@@ -28,11 +27,13 @@ $motos = $stmtMotos->fetchAll();
 $countEspera = 0;
 $countReparacion = 0;
 $countTerminado = 0;
+$countEntregado = 0;
 
 foreach ($motos as $m) {
     if ($m['estado'] === 'En Espera' || empty($m['estado'])) $countEspera++;
     if ($m['estado'] === 'En Reparacion') $countReparacion++;
     if ($m['estado'] === 'Terminado') $countTerminado++;
+    if ($m['estado'] === 'Entregado') $countEntregado++;
 }
 ?>
 
@@ -68,16 +69,11 @@ foreach ($motos as $m) {
         
         <!-- Encabezado y Estadísticas Rápidas -->
         <div class="row align-items-center mb-4 g-3">
-            <div class="col-md-6">
+            <div class="col-12">
                 <h3 class="fw-bold mb-1 text-dark">
                     <i class="bi bi-speedometer2 me-2 text-primary"></i>Motos en Taller
                 </h3>
                 <p class="text-muted mb-0">Control de reparaciones, diagnósticos y entregas pendientes</p>
-            </div>
-            <div class="col-md-6 text-md-end">
-                <a href="nueva_moto.php" class="btn btn-success btn-lg fw-bold shadow-sm">
-                    <i class="bi bi-plus-circle me-1"></i> + Ingresar Nueva Moto
-                </a>
             </div>
         </div>
 
@@ -138,13 +134,16 @@ foreach ($motos as $m) {
                                 Todas (<?php echo count($motos); ?>)
                             </button>
                             <button type="button" class="btn btn-outline-warning btn-sm filter-btn text-dark" onclick="filtrarPorEstado('En Espera', this)">
-                                🟡 En Espera
+                                🟡 En Espera (<?php echo $countEspera; ?>)
                             </button>
                             <button type="button" class="btn btn-outline-primary btn-sm filter-btn" onclick="filtrarPorEstado('En Reparacion', this)">
-                                🔵 En Reparación
+                                🔵 En Reparación (<?php echo $countReparacion; ?>)
                             </button>
                             <button type="button" class="btn btn-outline-success btn-sm filter-btn" onclick="filtrarPorEstado('Terminado', this)">
-                                🟢 Listas
+                                🟢 Listas (<?php echo $countTerminado; ?>)
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm filter-btn" onclick="filtrarPorEstado('Entregado', this)">
+                                ⚪ Entregadas (<?php echo $countEntregado; ?>)
                             </button>
                         </div>
                     </div>
@@ -194,6 +193,7 @@ foreach ($motos as $m) {
                                     if ($estado === 'En Espera') { $badgeClass = 'bg-warning text-dark'; $badgeIcon = 'bi-hourglass-split'; }
                                     if ($estado === 'En Reparacion') { $badgeClass = 'bg-primary text-white'; $badgeIcon = 'bi-gear-fill'; }
                                     if ($estado === 'Terminado') { $badgeClass = 'bg-success text-white'; $badgeIcon = 'bi-check-circle-fill'; }
+                                    if ($estado === 'Entregado') { $badgeClass = 'bg-secondary text-white'; $badgeIcon = 'bi-check2-all'; }
                                 ?>
                                     <tr class="fila-moto" data-estado="<?php echo htmlspecialchars($estado); ?>"
                                         data-search="<?php echo strtolower(htmlspecialchars($m['patente'] . ' ' . $m['marca'] . ' ' . $m['modelo'] . ' ' . $m['cliente_nombre'] . ' ' . $m['cliente_apellido'] . ' ' . $m['cliente_telefono'] . ' ' . ($m['falla_reportada'] ?? '') . ' ' . ($m['arreglo_realizado'] ?? ''))); ?>">
@@ -285,6 +285,10 @@ foreach ($motos as $m) {
                                         <!-- Acciones ABM -->
                                         <td class="text-center">
                                             <div class="btn-group-vertical btn-group-sm">
+                                                <!-- Botón Agregar otra moto a este dueño -->
+                                                <a href="nueva_moto.php?cliente_id=<?php echo $m['id_cliente']; ?>&nueva_moto=1" class="btn btn-success fw-semibold" title="Agregar otra moto a este cliente">
+                                                    <i class="bi bi-plus-circle me-1"></i> + Moto
+                                                </a>
                                                 <!-- Botón Editar / Ficha -->
                                                 <a href="editar_moto.php?id=<?php echo $m['id_moto']; ?>" class="btn btn-warning fw-semibold" title="Editar / Cambiar Estado">
                                                     <i class="bi bi-pencil-square me-1"></i> Editar Ficha

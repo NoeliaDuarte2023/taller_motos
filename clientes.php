@@ -145,11 +145,14 @@ $clientes = $stmt->fetchAll();
                                         <!-- Acciones -->
                                         <td class="text-center">
                                             <div class="btn-group btn-group-sm">
-                                                <a href="editar_cliente.php?id=<?php echo $c['id_cliente']; ?>" class="btn btn-outline-warning" title="Editar">
+                                                <a href="nueva_moto.php?cliente_id=<?php echo $c['id_cliente']; ?>&nueva_moto=1" class="btn btn-success text-white fw-bold" title="Agregar Moto a este dueño">
+                                                    <i class="bi bi-plus-circle me-1"></i> + Moto
+                                                </a>
+                                                <a href="editar_cliente.php?id=<?php echo $c['id_cliente']; ?>" class="btn btn-outline-warning" title="Editar Cliente">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <a href="eliminar_cliente.php?id=<?php echo $c['id_cliente']; ?>" class="btn btn-outline-danger" 
-                                                   onclick="return confirm('¿Seguro que deseas eliminar este cliente?');" title="Eliminar">
+                                                   onclick="return confirm('¿Seguro que deseas eliminar este cliente?');" title="Eliminar Cliente">
                                                     <i class="bi bi-trash"></i>
                                                 </a>
                                             </div>
