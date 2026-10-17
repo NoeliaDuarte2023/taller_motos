@@ -1,18 +1,22 @@
 <?php
 // ========================================================
 // ARCHIVO: entregadas.php
-// OBJETIVO: Grilla visual de motos entregadas (Historial del Taller)
+// OBJETIVO: Grilla visual de trabajos entregados (Historial del Taller en 1FN y 2FN)
 // LENGUAJES: PHP + HTML5 + Bootstrap 5 + JavaScript
 // ========================================================
 
 require_once 'conexion.php';
 
-// Consultar todas las motos que ya fueron entregadas
-$sqlEntregadas = "SELECT m.*, c.nombre AS cliente_nombre, c.apellido AS cliente_apellido, c.telefono AS cliente_telefono, c.direccion AS cliente_direccion
-                  FROM motos m 
+// Consultar todas las órdenes de trabajo que ya fueron entregadas
+$sqlEntregadas = "SELECT t.*, 
+                         m.patente, m.marca, m.modelo, m.color, m.kilometraje, m.anio,
+                         c.id_cliente, c.nombre AS cliente_nombre, c.apellido AS cliente_apellido, 
+                         c.telefono AS cliente_telefono, c.direccion AS cliente_direccion
+                  FROM trabajos t
+                  INNER JOIN motos m ON t.id_moto = m.id_moto 
                   INNER JOIN clientes c ON m.id_cliente = c.id_cliente 
-                  WHERE m.estado = 'Entregado'
-                  ORDER BY COALESCE(m.fecha_entrega, m.fecha_ingreso) DESC, m.id_moto DESC";
+                  WHERE t.estado = 'Entregado'
+                  ORDER BY COALESCE(t.fecha_entrega, t.fecha_ingreso) DESC, t.id_trabajo DESC";
 
 $stmtEntregadas = $pdo->query($sqlEntregadas);
 $entregadas = $stmtEntregadas->fetchAll();
@@ -29,7 +33,7 @@ foreach ($entregadas as $ent) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motos Entregadas - Historial del Taller</title>
+    <title>Historial de Entregadas - Taller de Motos</title>
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -62,7 +66,7 @@ foreach ($entregadas as $ent) {
         <div class="row align-items-center mb-4 g-3">
             <div class="col-md-7">
                 <h3 class="fw-bold mb-1 text-dark">
-                    <i class="bi bi-check2-circle me-2 text-success"></i>Historial de Motos Entregadas
+                    <i class="bi bi-check2-circle me-2 text-success"></i>Historial de Trabajos Entregados
                 </h3>
                 <p class="text-muted mb-0">Registro y archivo de todos los vehículos reparados y retirados</p>
             </div>
@@ -81,6 +85,14 @@ foreach ($entregadas as $ent) {
             </div>
         </div>
 
+        <?php if (isset($_GET['entregada'])): ?>
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check2-all me-2"></i>
+                <strong>¡Servicio completado!</strong> La moto ha sido entregada al cliente y archivada en este historial.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
         <!-- Buscador Rápido -->
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body p-3">
@@ -98,115 +110,95 @@ foreach ($entregadas as $ent) {
         <?php if (empty($entregadas)): ?>
             <div class="card shadow-sm border-0 text-center py-5">
                 <div class="card-body">
-                    <i class="bi bi-archive fs-1 text-muted d-block mb-3"></i>
-                    <h5 class="fw-bold text-dark">Aún no hay motos en el historial de entregas</h5>
-                    <p class="text-muted small">Cuando una moto esté lista en el taller, cambiale el estado a <strong>"Entregado"</strong> para archivarla acá.</p>
-                    <a href="motos.php" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-arrow-left me-1"></i> Ir al Tablero de Motos en Taller
+                    <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                    <h5 class="fw-bold text-dark">No hay registros de trabajos entregados aún</h5>
+                    <p class="text-muted mb-3">Cuando cambies el estado de una moto a "Entregado", aparecerá registrada en esta sección.</p>
+                    <a href="trabajos.php" class="btn btn-primary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Ir a Trabajos en Taller
                     </a>
                 </div>
             </div>
         <?php else: ?>
             <div class="row g-4" id="grillaEntregadas">
                 <?php foreach ($entregadas as $ent): 
-                    $montoFinal = floatval($ent['precio_final'] > 0 ? $ent['precio_final'] : $ent['precio_estimado']);
-                    $telLimpio = preg_replace('/[^0-9]/', '', $ent['cliente_telefono']);
+                    $precio = ($ent['precio_final'] > 0) ? $ent['precio_final'] : $ent['precio_estimado'];
+                    $textoBusqueda = strtolower($ent['patente'] . ' ' . $ent['marca'] . ' ' . $ent['modelo'] . ' ' . $ent['cliente_nombre'] . ' ' . $ent['cliente_apellido'] . ' ' . $ent['cliente_telefono'] . ' ' . ($ent['arreglo_realizado'] ?? '') . ' ' . ($ent['falla_reportada'] ?? ''));
                 ?>
-                    <div class="col-md-6 col-lg-4 item-entregada"
-                         data-search="<?php echo strtolower(htmlspecialchars($ent['patente'] . ' ' . $ent['marca'] . ' ' . $ent['modelo'] . ' ' . $ent['cliente_nombre'] . ' ' . $ent['cliente_apellido'] . ' ' . $ent['cliente_telefono'] . ' ' . ($ent['falla_reportada'] ?? '') . ' ' . ($ent['arreglo_realizado'] ?? '') . ' ' . ($ent['repuestos'] ?? ''))); ?>">
-                        
+                    <div class="col-md-6 col-lg-4 item-entrega" data-search="<?php echo htmlspecialchars($textoBusqueda); ?>">
                         <div class="card h-100 shadow-sm border-0 card-entrega bg-white">
                             
                             <!-- Header de la tarjeta -->
-                            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2.5 px-3">
-                                <span class="badge bg-black border border-secondary badge-patente text-warning">
-                                    <?php echo htmlspecialchars($ent['patente']); ?>
-                                </span>
-                                <span class="badge bg-success d-flex align-items-center gap-1 text-uppercase" style="font-size: 11px;">
-                                    <i class="bi bi-check-circle-fill"></i> Entregada
-                                </span>
-                            </div>
-
-                            <div class="card-body p-3.5 d-flex flex-col justify-content-between">
+                            <div class="card-header bg-white border-bottom pt-3 pb-2 d-flex justify-content-between align-items-start">
                                 <div>
-                                    <!-- Marca y Modelo -->
-                                    <h5 class="fw-bold text-dark mb-1">
+                                    <span class="badge bg-dark badge-patente border border-secondary text-warning">
+                                        <?php echo htmlspecialchars($ent['patente']); ?>
+                                    </span>
+                                    <h5 class="fw-bold mb-0 mt-2 text-dark">
                                         <?php echo htmlspecialchars($ent['marca'] . ' ' . $ent['modelo']); ?>
                                     </h5>
-                                    <p class="text-muted small mb-2">
-                                        <?php if (!empty($ent['color'])) echo 'Color: ' . htmlspecialchars($ent['color']) . ' | '; ?>
-                                        <?php if (!empty($ent['anio'])) echo 'Año: ' . htmlspecialchars($ent['anio']) . ' | '; ?>
-                                        <?php echo number_format($ent['kilometraje'] ?? 0, 0, ',', '.') . ' km'; ?>
-                                    </p>
+                                </div>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1.5 fw-semibold">
+                                    <i class="bi bi-check2-all me-1"></i> Entregada
+                                </span>
+                            </div>
 
-                                    <!-- Dueño -->
-                                    <div class="p-2 bg-light rounded-3 mb-3 border">
-                                        <div class="fw-bold text-primary small">
-                                            <i class="bi bi-person-fill me-1"></i>
-                                            <?php echo htmlspecialchars($ent['cliente_nombre'] . ' ' . $ent['cliente_apellido']); ?>
-                                        </div>
-                                        <small class="text-muted d-block mt-0.5" style="font-size: 11px;">
-                                            <i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($ent['cliente_telefono']); ?>
-                                            <?php if (!empty($ent['cliente_direccion'])) echo ' • ' . htmlspecialchars($ent['cliente_direccion']); ?>
-                                        </small>
-                                    </div>
-
-                                    <!-- Detalle del Trabajo Realizado -->
-                                    <div class="mb-3" style="font-size: 12.5px;">
-                                        <?php if (!empty($ent['arreglo_realizado'])): ?>
-                                            <div class="text-dark mb-1">
-                                                <strong class="text-success"><i class="bi bi-wrench-adjustable me-1"></i>Trabajo Realizado:</strong>
-                                                <p class="mb-1 text-secondary ps-3"><?php echo nl2br(htmlspecialchars($ent['arreglo_realizado'])); ?></p>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($ent['repuestos'])): ?>
-                                            <div class="text-dark mb-1">
-                                                <strong class="text-primary"><i class="bi bi-box-seam me-1"></i>Repuestos:</strong>
-                                                <span class="text-secondary"><?php echo htmlspecialchars($ent['repuestos']); ?></span>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($ent['falla_reportada'])): ?>
-                                            <small class="text-muted d-block mt-1">
-                                                <em>Ingresó por: <?php echo htmlspecialchars($ent['falla_reportada']); ?></em>
-                                            </small>
-                                        <?php endif; ?>
-                                    </div>
+                            <!-- Cuerpo de la tarjeta -->
+                            <div class="card-body pb-2">
+                                
+                                <!-- Dueño -->
+                                <div class="mb-3 p-2 bg-light rounded-2 border border-1">
+                                    <small class="text-muted d-block" style="font-size: 11px;">CLIENTE</small>
+                                    <strong class="text-primary d-block">
+                                        <i class="bi bi-person-fill me-1"></i>
+                                        <?php echo htmlspecialchars($ent['cliente_apellido'] . ', ' . $ent['cliente_nombre']); ?>
+                                    </strong>
+                                    <small class="text-muted">
+                                        <i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($ent['cliente_telefono']); ?>
+                                    </small>
                                 </div>
 
-                                <div>
-                                    <!-- Fechas de Ingreso y Retiro -->
-                                    <div class="border-top pt-2.5 mb-3 bg-light p-2 rounded-2" style="font-size: 11.5px;">
-                                        <div class="d-flex justify-content-between text-muted mb-1">
-                                            <span><i class="bi bi-box-arrow-in-right text-primary me-1"></i>Ingreso al Taller:</span>
-                                            <strong><?php echo !empty($ent['fecha_ingreso']) ? date('d/m/Y H:i', strtotime($ent['fecha_ingreso'])) : '-'; ?></strong>
-                                        </div>
-                                        <div class="d-flex justify-content-between text-success">
-                                            <span><i class="bi bi-check2-circle me-1"></i>Fecha de Retiro:</span>
-                                            <strong><?php echo !empty($ent['fecha_entrega']) ? date('d/m/Y H:i', strtotime($ent['fecha_entrega'])) : (!empty($ent['fecha_ingreso']) ? date('d/m/Y', strtotime($ent['fecha_ingreso'])) : 'Entregada'); ?></strong>
-                                        </div>
-                                    </div>
+                                <!-- Arreglo Realizado -->
+                                <div class="mb-2">
+                                    <small class="text-muted d-block fw-semibold mb-1" style="font-size: 11px;">TRABAJO REALIZADO:</small>
+                                    <p class="mb-1 text-dark small" style="min-height: 40px;">
+                                        <?php echo !empty($ent['arreglo_realizado']) ? nl2br(htmlspecialchars($ent['arreglo_realizado'])) : (!empty($ent['falla_reportada']) ? nl2br(htmlspecialchars($ent['falla_reportada'])) : '<span class="text-muted italic">Sin detalle informado</span>'); ?>
+                                    </p>
+                                </div>
 
-                                    <!-- Total y Botones -->
-                                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                                        <div>
-                                            <small class="text-muted d-block text-uppercase" style="font-size: 10px;">Total Cobrado</small>
-                                            <span class="fs-5 fw-bold text-dark font-monospace">$ <?php echo number_format($montoFinal, 2, ',', '.'); ?></span>
-                                        </div>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="editar_moto.php?id=<?php echo $ent['id_moto']; ?>" class="btn btn-outline-warning" title="Editar Ficha">
-                                                <i class="bi bi-pencil-square"></i> Ver Ficha
-                                            </a>
-                                            <a href="eliminar_moto.php?id=<?php echo $ent['id_moto']; ?>" class="btn btn-outline-danger" 
-                                               onclick="return confirm('¿Eliminar esta moto del historial?');" title="Eliminar">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
-                                        </div>
+                                <!-- Repuestos si los hubo -->
+                                <?php if (!empty($ent['repuestos'])): ?>
+                                    <div class="mb-2 small text-secondary">
+                                        <strong><i class="bi bi-box-seam me-1"></i>Repuestos:</strong> <?php echo htmlspecialchars($ent['repuestos']); ?>
                                     </div>
+                                <?php endif; ?>
+
+                                <!-- Fechas -->
+                                <div class="border-top pt-2 mt-2 d-flex justify-content-between text-muted" style="font-size: 12px;">
+                                    <span>
+                                        <i class="bi bi-calendar-check me-1 text-success"></i>
+                                        Retiro: <?php echo !empty($ent['fecha_entrega']) ? date('d/m/Y', strtotime($ent['fecha_entrega'])) : date('d/m/Y', strtotime($ent['fecha_ingreso'])); ?>
+                                    </span>
+                                    <span>
+                                        <i class="bi bi-box-arrow-in-right me-1 text-muted"></i>
+                                        Ingresó: <?php echo !empty($ent['fecha_ingreso']) ? date('d/m/Y', strtotime($ent['fecha_ingreso'])) : '-'; ?>
+                                    </span>
                                 </div>
 
                             </div>
+
+                            <!-- Footer de la tarjeta con importe y botón de reapertura/edición -->
+                            <div class="card-footer bg-light border-top d-flex justify-content-between align-items-center py-2.5">
+                                <div>
+                                    <small class="text-muted d-block" style="font-size: 10px;">TOTAL COBRADO</small>
+                                    <strong class="fs-5 text-dark font-monospace">$ <?php echo number_format($precio, 2, ',', '.'); ?></strong>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="editar_trabajo.php?id=<?php echo $ent['id_trabajo']; ?>" class="btn btn-outline-secondary btn-sm" title="Ver / Editar ficha">
+                                        <i class="bi bi-eye me-1"></i> Ver Ficha
+                                    </a>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -215,18 +207,18 @@ foreach ($entregadas as $ent) {
 
     </div>
 
-    <!-- Script de Búsqueda Rápida en Entregadas -->
+    <!-- Script de Búsqueda de Entregadas -->
     <script>
         function filtrarEntregadas() {
-            const query = document.getElementById('buscadorEntregadas').value.toLowerCase();
-            const cards = document.querySelectorAll('.item-entregada');
+            const input = document.getElementById('buscadorEntregadas').value.toLowerCase();
+            const tarjetas = document.querySelectorAll('.item-entrega');
 
-            cards.forEach(card => {
-                const searchData = card.getAttribute('data-search') || '';
-                if (searchData.includes(query)) {
-                    card.style.display = '';
+            tarjetas.forEach(t => {
+                const search = t.getAttribute('data-search') || '';
+                if (search.includes(input)) {
+                    t.style.display = '';
                 } else {
-                    card.style.display = 'none';
+                    t.style.display = 'none';
                 }
             });
         }

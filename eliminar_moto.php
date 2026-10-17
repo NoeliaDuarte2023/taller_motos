@@ -1,16 +1,21 @@
 <?php
+// ========================================================
+// ARCHIVO: eliminar_moto.php
+// OBJETIVO: Eliminar un registro de moto del padrón (ABM Motos)
+// ========================================================
+
 require_once 'conexion.php';
 
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     
-    $id_moto = $_GET['id'];
+    $id_moto = intval($_GET['id']);
 
     try {
         $sql = "DELETE FROM motos WHERE id_moto = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([':id' => $id_moto]);
 
-        header('Location: motos.php');
+        header('Location: motos.php?eliminado=ok');
         exit;
 
     } catch (PDOException $e) {

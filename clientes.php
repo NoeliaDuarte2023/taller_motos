@@ -1,16 +1,16 @@
 <?php
 // ========================================================
 // ARCHIVO: clientes.php
-// OBJETIVO: Padrón de clientes y listado de sus vehículos
+// OBJETIVO: Padrón de clientes y listado de sus vehículos (1FN y 2FN)
 // LENGUAJES: PHP + HTML5 + Bootstrap 5 + JavaScript
 // ========================================================
 
 require_once 'conexion.php';
 
-// Consultamos clientes con la cantidad de motos que tienen y el detalle
+// Consultamos clientes con la cantidad de motos registradas y el detalle de cada vehículo
 $sqlClientes = "SELECT c.*, 
                 COUNT(m.id_moto) AS total_motos,
-                GROUP_CONCAT(CONCAT(m.marca, ' ', m.modelo, ' (', m.patente, ') - ', COALESCE(m.estado, 'En Espera')) SEPARATOR '||') AS detalle_motos
+                GROUP_CONCAT(CONCAT(m.marca, ' ', m.modelo, ' (', m.patente, ')') SEPARATOR '||') AS detalle_motos
                 FROM clientes c
                 LEFT JOIN motos m ON c.id_cliente = m.id_cliente
                 GROUP BY c.id_cliente
@@ -37,7 +37,7 @@ $clientes = $stmt->fetchAll();
 
     <div class="container mb-5">
         
-        <!-- Encabezado con Botón a Página de Alta -->
+        <!-- Encabezado con Botón a Página de Alta AFUERA DE LA GRILLA -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
             <div>
                 <h3 class="fw-bold mb-1 text-dark">
@@ -51,6 +51,30 @@ $clientes = $stmt->fetchAll();
                 </a>
             </div>
         </div>
+
+        <?php if (isset($_GET['guardado'])): ?>
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                ¡Cliente registrado correctamente!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['actualizado'])): ?>
+            <div class="alert alert-info alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                Datos del cliente actualizados.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['eliminado'])): ?>
+            <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Cliente eliminado del sistema.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
 
         <!-- Barra de Búsqueda Rápida de Clientes -->
         <div class="card shadow-sm border-0 mb-4">
@@ -117,25 +141,19 @@ $clientes = $stmt->fetchAll();
                                         <td>
                                             <span class="text-secondary small">
                                                 <i class="bi bi-geo-alt me-1 text-danger"></i>
-                                                <?php echo !empty($c['direccion']) ? htmlspecialchars($c['direccion']) : '<span class="text-muted italic">No informada</span>'; ?>
+                                                <?php echo !empty($c['direccion']) ? htmlspecialchars($c['direccion']) : '<span class="text-muted fst-italic">No informada</span>'; ?>
                                             </span>
                                         </td>
 
-                                        <!-- Motos Registradas -->
+                                        <!-- Motos Registradas (Conservadas permanentemente) -->
                                         <td>
                                             <?php if (empty($listaMotos)): ?>
                                                 <span class="badge bg-light text-muted border">Sin motos asociadas</span>
                                             <?php else: ?>
                                                 <div class="d-flex flex-column gap-1">
-                                                    <?php foreach ($listaMotos as $mInfo): 
-                                                        $badgeBg = 'bg-secondary';
-                                                        if (strpos($mInfo, 'En Espera') !== false) $badgeBg = 'bg-warning text-dark';
-                                                        if (strpos($mInfo, 'En Reparacion') !== false) $badgeBg = 'bg-primary text-white';
-                                                        if (strpos($mInfo, 'Terminado') !== false) $badgeBg = 'bg-success text-white';
-                                                        if (strpos($mInfo, 'Entregado') !== false) $badgeBg = 'bg-dark text-white';
-                                                    ?>
-                                                        <span class="badge <?php echo $badgeBg; ?> text-start p-1.5 font-monospace text-truncate" style="max-width: 280px;">
-                                                            <i class="bi bi-bicycle me-1"></i><?php echo htmlspecialchars($mInfo); ?>
+                                                    <?php foreach ($listaMotos as $mInfo): ?>
+                                                        <span class="badge bg-secondary text-start p-1.5 font-monospace text-truncate" style="max-width: 280px;">
+                                                            <i class="bi bi-bicycle me-1 text-warning"></i><?php echo htmlspecialchars($mInfo); ?>
                                                         </span>
                                                     <?php endforeach; ?>
                                                 </div>
@@ -145,7 +163,7 @@ $clientes = $stmt->fetchAll();
                                         <!-- Acciones -->
                                         <td class="text-center">
                                             <div class="btn-group btn-group-sm">
-                                                <a href="nueva_moto.php?cliente_id=<?php echo $c['id_cliente']; ?>&nueva_moto=1" class="btn btn-success text-white fw-bold" title="Agregar Moto a este dueño">
+                                                <a href="nueva_moto.php?cliente_id=<?php echo $c['id_cliente']; ?>&solo_moto=1" class="btn btn-outline-success" title="Registrar Moto para este cliente">
                                                     <i class="bi bi-plus-circle me-1"></i> + Moto
                                                 </a>
                                                 <a href="editar_cliente.php?id=<?php echo $c['id_cliente']; ?>" class="btn btn-outline-warning" title="Editar Cliente">

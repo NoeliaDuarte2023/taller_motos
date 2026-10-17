@@ -1,5 +1,5 @@
-﻿<?php
-// Redirección directa al tablero principal de motos
-header('Location: motos.php');
+<?php
+// Redirección directa al tablero de trabajos en taller
+header('Location: trabajos.php');
 exit;
 ?>

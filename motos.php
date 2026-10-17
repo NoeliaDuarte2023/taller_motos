@@ -1,40 +1,26 @@
 <?php
 // ========================================================
 // ARCHIVO: motos.php
-// OBJETIVO: Tablero principal de motos en reparación en el taller
+// OBJETIVO: ABM Exclusivo de Motos (Requerimiento de Cátedra)
+// "también debería haber donde administrar solo motos"
 // LENGUAJES: PHP + HTML5 + Bootstrap 5 + JavaScript
 // ========================================================
 
 require_once 'conexion.php';
 
-// Consultamos todas las motos registradas junto a sus clientes
-$sqlMotos = "SELECT m.*, c.nombre AS cliente_nombre, c.apellido AS cliente_apellido, c.telefono AS cliente_telefono, c.direccion AS cliente_direccion
-             FROM motos m 
-             INNER JOIN clientes c ON m.id_cliente = c.id_cliente 
-             ORDER BY 
-                CASE 
-                    WHEN m.estado = 'Terminado' THEN 1
-                    WHEN m.estado = 'En Reparacion' THEN 2
-                    WHEN m.estado = 'En Espera' THEN 3
-                    ELSE 4
-                END,
-                m.id_moto DESC";
+// Consultamos todas las motos registradas con los datos de sus clientes dueños
+// y el último estado de trabajo (si tiene o no en taller)
+$sqlMotos = "SELECT m.*, 
+                    c.nombre AS cliente_nombre, c.apellido AS cliente_apellido, 
+                    c.telefono AS cliente_telefono, c.direccion AS cliente_direccion,
+                    (SELECT t.estado FROM trabajos t WHERE t.id_moto = m.id_moto ORDER BY t.id_trabajo DESC LIMIT 1) AS ultimo_estado,
+                    (SELECT COUNT(*) FROM trabajos t WHERE t.id_moto = m.id_moto) AS total_trabajos
+             FROM motos m
+             INNER JOIN clientes c ON m.id_cliente = c.id_cliente
+             ORDER BY m.id_moto DESC";
 
 $stmtMotos = $pdo->query($sqlMotos);
 $motos = $stmtMotos->fetchAll();
-
-// Conteo por estado
-$countEspera = 0;
-$countReparacion = 0;
-$countTerminado = 0;
-$countEntregado = 0;
-
-foreach ($motos as $m) {
-    if ($m['estado'] === 'En Espera' || empty($m['estado'])) $countEspera++;
-    if ($m['estado'] === 'En Reparacion') $countReparacion++;
-    if ($m['estado'] === 'Terminado') $countTerminado++;
-    if ($m['estado'] === 'Entregado') $countEntregado++;
-}
 ?>
 
 <!DOCTYPE html>
@@ -42,7 +28,7 @@ foreach ($motos as $m) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motos en Taller - Panel de Control</title>
+    <title>Administración de Motos - Taller de Motos</title>
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -54,10 +40,6 @@ foreach ($motos as $m) {
             padding: 6px 10px;
             border-radius: 6px;
         }
-        .filter-btn.active {
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        }
     </style>
 </head>
 <body class="bg-light">
@@ -67,235 +49,173 @@ foreach ($motos as $m) {
 
     <div class="container mb-5">
         
-        <!-- Encabezado y Estadísticas Rápidas -->
-        <div class="row align-items-center mb-4 g-3">
-            <div class="col-12">
+        <!-- Encabezado con Botón de Alta AFUERA DE LA GRILLA (Pedido de Cátedra) -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
                 <h3 class="fw-bold mb-1 text-dark">
-                    <i class="bi bi-speedometer2 me-2 text-primary"></i>Motos en Taller
+                    <i class="bi bi-bicycle me-2 text-info"></i>Administración de Motos
                 </h3>
-                <p class="text-muted mb-0">Control de reparaciones, diagnósticos y entregas pendientes</p>
+                <p class="text-muted mb-0">Padrón de vehículos registrados, asignación de dueños e historial de servicios</p>
+            </div>
+            <div>
+                <!-- Botón de alta fuera de la grilla -->
+                <a href="nueva_moto.php?solo_moto=1" class="btn btn-success fw-bold shadow-sm px-3 py-2">
+                    <i class="bi bi-plus-circle-fill me-1"></i> + Registrar Nueva Moto
+                </a>
             </div>
         </div>
 
-        <!-- Tarjetas de Resumen Rápido -->
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow-sm border-start border-4 border-warning bg-white h-100">
-                    <div class="card-body p-3">
-                        <span class="text-muted small fw-semibold text-uppercase">🟡 En Espera</span>
-                        <h4 class="fw-bold mb-0 text-dark"><?php echo $countEspera; ?></h4>
-                    </div>
-                </div>
+        <?php if (isset($_GET['guardado'])): ?>
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                ¡Moto registrada correctamente en el padrón!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow-sm border-start border-4 border-primary bg-white h-100">
-                    <div class="card-body p-3">
-                        <span class="text-muted small fw-semibold text-uppercase">🔵 En Reparación</span>
-                        <h4 class="fw-bold mb-0 text-dark"><?php echo $countReparacion; ?></h4>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow-sm border-start border-4 border-success bg-white h-100">
-                    <div class="card-body p-3">
-                        <span class="text-muted small fw-semibold text-uppercase">🟢 Listas para Entrega</span>
-                        <h4 class="fw-bold mb-0 text-success"><?php echo $countTerminado; ?></h4>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow-sm border-start border-4 border-dark bg-white h-100">
-                    <div class="card-body p-3">
-                        <span class="text-muted small fw-semibold text-uppercase">📦 Total en Taller</span>
-                        <h4 class="fw-bold mb-0 text-dark"><?php echo count($motos); ?></h4>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <?php endif; ?>
 
-        <!-- Barra de Búsqueda en Tiempo Real y Filtros -->
+        <?php if (isset($_GET['actualizado'])): ?>
+            <div class="alert alert-info alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                Datos del vehículo actualizados correctamente.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['eliminado'])): ?>
+            <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Moto eliminada del sistema.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <!-- Buscador en Tiempo Real -->
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body p-3">
-                <div class="row g-3 align-items-center">
-                    <!-- Input de Búsqueda -->
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input type="text" id="buscador" class="form-control border-start-0 ps-0" 
-                                   placeholder="Buscar por patente, dueño, teléfono, marca o arreglo..." onkeyup="filtrarMotos()">
-                        </div>
-                    </div>
-                    <!-- Botones de Filtro por Estado -->
-                    <div class="col-md-6 text-md-end">
-                        <div class="btn-group w-100 w-md-auto" role="group">
-                            <button type="button" class="btn btn-outline-dark btn-sm filter-btn active" onclick="filtrarPorEstado('TODOS', this)">
-                                Todas (<?php echo count($motos); ?>)
-                            </button>
-                            <button type="button" class="btn btn-outline-warning btn-sm filter-btn text-dark" onclick="filtrarPorEstado('En Espera', this)">
-                                🟡 En Espera (<?php echo $countEspera; ?>)
-                            </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm filter-btn" onclick="filtrarPorEstado('En Reparacion', this)">
-                                🔵 En Reparación (<?php echo $countReparacion; ?>)
-                            </button>
-                            <button type="button" class="btn btn-outline-success btn-sm filter-btn" onclick="filtrarPorEstado('Terminado', this)">
-                                🟢 Listas (<?php echo $countTerminado; ?>)
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm filter-btn" onclick="filtrarPorEstado('Entregado', this)">
-                                ⚪ Entregadas (<?php echo $countEntregado; ?>)
-                            </button>
-                        </div>
-                    </div>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="buscadorMotos" class="form-control border-start-0 ps-0" 
+                           placeholder="Buscar por patente, marca, modelo, dueño, teléfono..." onkeyup="filtrarMotos()">
                 </div>
             </div>
         </div>
 
-        <!-- TABLA DE MOTOS EN REPARACIÓN -->
+        <!-- TABLA DE ADMINISTRACIÓN DE MOTOS -->
         <div class="card shadow-sm border-0">
             <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
                 <h5 class="mb-0 fs-6 fw-bold">
-                    <i class="bi bi-tools me-2 text-warning"></i>Motos Actualmente en el Taller
+                    <i class="bi bi-card-list me-2 text-info"></i>Parque de Vehículos Registrados
                 </h5>
-                <span class="badge bg-secondary" id="contadorFiltradas"><?php echo count($motos); ?> Registros</span>
+                <span class="badge bg-secondary" id="contadorFiltradas"><?php echo count($motos); ?> Motos</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0" id="tablaMotos">
                         <thead class="table-dark">
                             <tr>
-                                <th>Patente / Vehículo</th>
-                                <th>Dueño & Contacto</th>
-                                <th>Falla / Arreglo por Hacer</th>
-                                <th>Arreglo Realizado / Repuestos</th>
-                                <th>Fechas</th>
-                                <th>Estado</th>
-                                <th class="text-center">Acciones (ABM)</th>
+                                <th>Patente</th>
+                                <th>Marca y Modelo</th>
+                                <th>Año y Color</th>
+                                <th>Kilometraje</th>
+                                <th>Dueño / Contacto</th>
+                                <th>Historial en Taller</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($motos)): ?>
-                                <tr id="filaVacia">
+                                <tr>
                                     <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="bi bi-check-circle fs-1 text-success d-block mb-2"></i>
-                                        <strong>¡No hay motos en reparación en este momento!</strong>
-                                        <p class="small text-muted mb-3">El taller está al día. Hacé clic abajo para registrar un nuevo ingreso.</p>
-                                        <a href="nueva_moto.php" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-plus-circle me-1"></i> Ingresar Nueva Moto
+                                        <i class="bi bi-bicycle fs-1 text-muted d-block mb-2"></i>
+                                        <strong>No hay motos registradas en el sistema.</strong>
+                                        <p class="small text-muted mb-3">Registrá la primera moto haciendo clic en el botón superior.</p>
+                                        <a href="nueva_moto.php?solo_moto=1" class="btn btn-sm btn-success">
+                                            <i class="bi bi-plus-circle me-1"></i> + Registrar Moto
                                         </a>
                                     </td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($motos as $m): 
-                                    $estado = $m['estado'] ?? 'En Espera';
+                                    $estado = $m['ultimo_estado'] ?? 'Sin trabajos';
                                     $badgeClass = 'bg-secondary';
-                                    $badgeIcon = 'bi-clock';
-                                    if ($estado === 'En Espera') { $badgeClass = 'bg-warning text-dark'; $badgeIcon = 'bi-hourglass-split'; }
-                                    if ($estado === 'En Reparacion') { $badgeClass = 'bg-primary text-white'; $badgeIcon = 'bi-gear-fill'; }
-                                    if ($estado === 'Terminado') { $badgeClass = 'bg-success text-white'; $badgeIcon = 'bi-check-circle-fill'; }
-                                    if ($estado === 'Entregado') { $badgeClass = 'bg-secondary text-white'; $badgeIcon = 'bi-check2-all'; }
+                                    if ($estado === 'En Espera') $badgeClass = 'bg-warning text-dark';
+                                    if ($estado === 'En Reparacion') $badgeClass = 'bg-primary text-white';
+                                    if ($estado === 'Terminado') $badgeClass = 'bg-success text-white';
+                                    if ($estado === 'Entregado') $badgeClass = 'bg-dark text-white';
                                 ?>
-                                    <tr class="fila-moto" data-estado="<?php echo htmlspecialchars($estado); ?>"
-                                        data-search="<?php echo strtolower(htmlspecialchars($m['patente'] . ' ' . $m['marca'] . ' ' . $m['modelo'] . ' ' . $m['cliente_nombre'] . ' ' . $m['cliente_apellido'] . ' ' . $m['cliente_telefono'] . ' ' . ($m['falla_reportada'] ?? '') . ' ' . ($m['arreglo_realizado'] ?? ''))); ?>">
+                                    <tr class="fila-moto" 
+                                        data-search="<?php echo strtolower(htmlspecialchars($m['patente'] . ' ' . $m['marca'] . ' ' . $m['modelo'] . ' ' . $m['color'] . ' ' . $m['anio'] . ' ' . $m['cliente_nombre'] . ' ' . $m['cliente_apellido'] . ' ' . $m['cliente_telefono'])); ?>">
                                         
-                                        <!-- Patente y Vehículo -->
+                                        <!-- Patente -->
                                         <td>
                                             <span class="badge bg-dark badge-patente border border-secondary text-warning">
                                                 <?php echo htmlspecialchars($m['patente']); ?>
                                             </span>
-                                            <div class="fw-bold mt-1 text-dark">
+                                        </td>
+
+                                        <!-- Marca y Modelo -->
+                                        <td>
+                                            <div class="fw-bold text-dark fs-6">
                                                 <?php echo htmlspecialchars($m['marca'] . ' ' . $m['modelo']); ?>
                                             </div>
+                                            <small class="text-muted">ID: #<?php echo $m['id_moto']; ?></small>
+                                        </td>
+
+                                        <!-- Año y Color -->
+                                        <td>
+                                            <span class="d-block text-dark">
+                                                <strong>Año:</strong> <?php echo !empty($m['anio']) ? $m['anio'] : '<span class="text-muted">-</span>'; ?>
+                                            </span>
                                             <small class="text-muted">
-                                                <?php if (!empty($m['color'])) echo 'Color: ' . htmlspecialchars($m['color']) . ' | '; ?>
-                                                <?php echo number_format($m['kilometraje'] ?? 0, 0, ',', '.') . ' km'; ?>
+                                                <strong>Color:</strong> <?php echo !empty($m['color']) ? htmlspecialchars($m['color']) : '<span class="text-muted">No especificado</span>'; ?>
                                             </small>
                                         </td>
 
-                                        <!-- Dueño & Teléfono -->
+                                        <!-- Kilometraje -->
                                         <td>
-                                            <div class="fw-bold text-primary">
-                                                <i class="bi bi-person-fill me-1"></i>
-                                                <?php echo htmlspecialchars($m['cliente_nombre'] . ' ' . $m['cliente_apellido']); ?>
-                                            </div>
-                                            <small class="text-muted d-block mt-0.5">
-                                                <i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($m['cliente_telefono']); ?>
-                                            </small>
-                                            <?php if (!empty($m['cliente_direccion'])): ?>
-                                                <small class="text-muted d-block text-truncate" style="max-width: 160px;">
-                                                    <i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($m['cliente_direccion']); ?>
-                                                </small>
-                                            <?php endif; ?>
-                                        </td>
-
-                                        <!-- Falla Reportada -->
-                                        <td>
-                                            <div class="p-2 bg-light rounded border border-1" style="max-width: 220px; font-size: 0.85rem;">
-                                                <strong class="text-danger d-block mb-1"><i class="bi bi-exclamation-triangle me-1"></i>Falla / Motivo:</strong>
-                                                <?php echo !empty($m['falla_reportada']) ? nl2br(htmlspecialchars($m['falla_reportada'])) : (!empty($m['observaciones']) ? nl2br(htmlspecialchars($m['observaciones'])) : '<span class="text-muted">Sin especificar</span>'); ?>
-                                            </div>
-                                        </td>
-
-                                        <!-- Arreglo Realizado y Repuestos -->
-                                        <td>
-                                            <div style="max-width: 220px; font-size: 0.85rem;">
-                                                <?php if (!empty($m['arreglo_realizado'])): ?>
-                                                    <strong class="text-success d-block"><i class="bi bi-check2-circle me-1"></i>Trabajo:</strong>
-                                                    <span><?php echo nl2br(htmlspecialchars($m['arreglo_realizado'])); ?></span>
-                                                <?php else: ?>
-                                                    <span class="text-muted italic">Pendiente de realización</span>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($m['repuestos'])): ?>
-                                                    <div class="mt-1 small text-secondary">
-                                                        <strong><i class="bi bi-box-seam me-1"></i>Repuestos:</strong> <?php echo htmlspecialchars($m['repuestos']); ?>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-
-                                        <!-- Fechas -->
-                                        <td>
-                                            <small class="d-block text-muted">
-                                                <i class="bi bi-box-arrow-in-right text-primary me-1"></i>
-                                                <strong>Ingreso:</strong> 
-                                                <?php echo !empty($m['fecha_ingreso']) ? date('d/m/Y', strtotime($m['fecha_ingreso'])) : '-'; ?>
-                                            </small>
-                                            <?php if (!empty($m['fecha_prometida'])): ?>
-                                                <small class="d-block text-danger">
-                                                    <i class="bi bi-calendar-event me-1"></i>
-                                                    <strong>Pactada:</strong> <?php echo date('d/m/Y', strtotime($m['fecha_prometida'])); ?>
-                                                </small>
-                                            <?php endif; ?>
-                                            <?php if (($m['precio_final'] ?? 0) > 0 || ($m['precio_estimado'] ?? 0) > 0): ?>
-                                                <span class="badge bg-light text-dark border mt-1 font-monospace">
-                                                    $ <?php echo number_format($m['precio_final'] > 0 ? $m['precio_final'] : $m['precio_estimado'], 2, ',', '.'); ?>
-                                                </span>
-                                            <?php endif; ?>
-                                        </td>
-
-                                        <!-- Estado Actual -->
-                                        <td>
-                                            <span class="badge <?php echo $badgeClass; ?> p-2 d-inline-flex align-items-center gap-1">
-                                                <i class="bi <?php echo $badgeIcon; ?>"></i>
-                                                <?php echo htmlspecialchars($estado); ?>
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-speedometer2 me-1"></i><?php echo number_format($m['kilometraje'] ?? 0, 0, ',', '.'); ?> km
                                             </span>
                                         </td>
 
-                                        <!-- Acciones ABM -->
+                                        <!-- Dueño / Contacto -->
+                                        <td>
+                                            <div class="fw-bold text-primary">
+                                                <i class="bi bi-person-fill me-1"></i>
+                                                <?php echo htmlspecialchars($m['cliente_apellido'] . ', ' . $m['cliente_nombre']); ?>
+                                            </div>
+                                            <small class="text-muted d-block">
+                                                <i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($m['cliente_telefono']); ?>
+                                            </small>
+                                        </td>
+
+                                        <!-- Historial en Taller -->
+                                        <td>
+                                            <span class="badge <?php echo $badgeClass; ?> p-1.5 px-2">
+                                                <?php echo htmlspecialchars($estado); ?>
+                                            </span>
+                                            <small class="d-block text-muted mt-1">
+                                                <?php echo $m['total_trabajos']; ?> trabajo(s) en total
+                                            </small>
+                                        </td>
+
+                                        <!-- Acciones ABM Moto -->
                                         <td class="text-center">
-                                            <div class="btn-group-vertical btn-group-sm">
-                                                <!-- Botón Agregar otra moto a este dueño -->
-                                                <a href="nueva_moto.php?cliente_id=<?php echo $m['id_cliente']; ?>&nueva_moto=1" class="btn btn-success fw-semibold" title="Agregar otra moto a este cliente">
-                                                    <i class="bi bi-plus-circle me-1"></i> + Moto
+                                            <div class="btn-group btn-group-sm">
+                                                <!-- Botón Iniciar Nuevo Trabajo para esta moto -->
+                                                <a href="nueva_moto.php?id_moto=<?php echo $m['id_moto']; ?>" class="btn btn-outline-primary" title="Abrir orden de trabajo en taller">
+                                                    <i class="bi bi-tools"></i> Trabajo
                                                 </a>
-                                                <!-- Botón Editar / Ficha -->
-                                                <a href="editar_moto.php?id=<?php echo $m['id_moto']; ?>" class="btn btn-warning fw-semibold" title="Editar / Cambiar Estado">
-                                                    <i class="bi bi-pencil-square me-1"></i> Editar Ficha
+                                                <!-- Botón Editar Vehículo -->
+                                                <a href="editar_moto.php?id=<?php echo $m['id_moto']; ?>" class="btn btn-outline-warning" title="Editar datos del vehículo">
+                                                    <i class="bi bi-pencil"></i>
                                                 </a>
-                                                <!-- Botón Eliminar -->
-                                                <a href="eliminar_moto.php?id=<?php echo $m['id_moto']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar el registro de esta moto?');" title="Eliminar">
-                                                    <i class="bi bi-trash"></i> Eliminar
+                                                <!-- Botón Eliminar Vehículo -->
+                                                <a href="eliminar_moto.php?id=<?php echo $m['id_moto']; ?>" class="btn btn-outline-danger" 
+                                                   onclick="return confirm('¿Seguro que deseas eliminar el registro de esta moto del padrón?');" title="Eliminar moto">
+                                                    <i class="bi bi-trash"></i>
                                                 </a>
                                             </div>
                                         </td>
@@ -311,23 +231,16 @@ foreach ($motos as $m) {
 
     </div>
 
-    <!-- Script de Búsqueda y Filtrado en Tiempo Real -->
+    <!-- Script de Búsqueda en Tiempo Real -->
     <script>
-        let estadoFiltroActual = 'TODOS';
-
         function filtrarMotos() {
-            const input = document.getElementById('buscador').value.toLowerCase();
+            const input = document.getElementById('buscadorMotos').value.toLowerCase();
             const filas = document.querySelectorAll('.fila-moto');
             let contador = 0;
 
             filas.forEach(fila => {
                 const texto = fila.getAttribute('data-search') || '';
-                const estado = fila.getAttribute('data-estado') || '';
-
-                const coincideTexto = texto.includes(input);
-                const coincideEstado = (estadoFiltroActual === 'TODOS') || (estado === estadoFiltroActual);
-
-                if (coincideTexto && coincideEstado) {
+                if (texto.includes(input)) {
                     fila.style.display = '';
                     contador++;
                 } else {
@@ -335,17 +248,8 @@ foreach ($motos as $m) {
                 }
             });
 
-            document.getElementById('contadorFiltradas').innerText = contador + ' Registros';
-        }
-
-        function filtrarPorEstado(estado, boton) {
-            estadoFiltroActual = estado;
-            
-            // Actualizar clase activa en botones
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            boton.classList.add('active');
-
-            filtrarMotos();
+            const contadorEl = document.getElementById('contadorFiltradas');
+            if (contadorEl) contadorEl.innerText = contador + ' Motos';
         }
     </script>
 

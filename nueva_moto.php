@@ -1,7 +1,7 @@
 <?php
 // ========================================================
 // ARCHIVO: nueva_moto.php
-// OBJETIVO: Formulario unificado de Ingreso al Taller
+// OBJETIVO: Formulario unificado de Ingreso al Taller o Registro de Moto (1FN y 2FN)
 // ========================================================
 
 require_once 'conexion.php';
@@ -19,8 +19,20 @@ foreach ($todasMotos as $m) {
     $motosPorCliente[$m['id_cliente']][] = $m;
 }
 
-// Cliente preseleccionado por URL (desde el botón + Moto en Clientes)
+// Parámetros por URL
 $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
+$motoPreseleccionada    = intval($_GET['id_moto'] ?? 0);
+$esSoloMoto             = isset($_GET['solo_moto']) && $_GET['solo_moto'] == '1';
+
+// Si viene preseleccionada una moto, buscar su cliente dueño
+if ($motoPreseleccionada > 0 && $clientePreseleccionado === 0) {
+    foreach ($todasMotos as $m) {
+        if ($m['id_moto'] == $motoPreseleccionada) {
+            $clientePreseleccionado = intval($m['id_cliente']);
+            break;
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -28,7 +40,7 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ingreso al Taller - Taller de Motos</title>
+    <title><?php echo $esSoloMoto ? 'Registrar Moto' : 'Ingreso al Taller'; ?> - Taller de Motos</title>
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -46,25 +58,34 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
                     <div class="card-header bg-dark text-white p-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h4 class="mb-1 fw-bold"><i class="bi bi-tools text-warning me-2"></i>Ingreso de Trabajo al Taller</h4>
-                                <p class="text-muted small mb-0">Carga de cliente, vehículo y servicio a realizar</p>
+                                <h4 class="mb-1 fw-bold">
+                                    <?php if ($esSoloMoto): ?>
+                                        <i class="bi bi-bicycle text-info me-2"></i>Registrar Nueva Moto en el Padrón
+                                    <?php else: ?>
+                                        <i class="bi bi-tools text-warning me-2"></i>Ingreso de Trabajo al Taller
+                                    <?php endif; ?>
+                                </h4>
+                                <p class="text-muted small mb-0">
+                                    <?php echo $esSoloMoto ? 'Carga del vehículo asociado a su cliente dueño' : 'Carga de cliente, vehículo y orden de servicio a realizar'; ?>
+                                </p>
                             </div>
-                            <a href="motos.php" class="btn btn-outline-light btn-sm">
-                                <i class="bi bi-arrow-left me-1"></i> Volver al Tablero
+                            <a href="<?php echo $esSoloMoto ? 'motos.php' : 'trabajos.php'; ?>" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i> Volver
                             </a>
                         </div>
                     </div>
                     <div class="card-body p-4 p-md-5">
                         
                         <form action="guardar_moto.php" method="POST" id="formNuevoTrabajo">
+                            <input type="hidden" name="solo_moto" value="<?php echo $esSoloMoto ? '1' : '0'; ?>">
                             
                             <!-- ============================================== -->
-                            <!-- SECCIÓN: DATOS DEL CLIENTE -->
+                            <!-- SECCIÓN: DATOS DEL CLIENTE / DUEÑO -->
                             <!-- ============================================== -->
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
                                     <h5 class="fw-bold text-dark mb-0">
-                                        <i class="bi bi-person-fill text-primary me-1"></i> Datos del Cliente
+                                        <i class="bi bi-person-fill text-primary me-1"></i> Dueño de la Moto (Cliente)
                                     </h5>
                                     
                                     <div class="btn-group btn-group-sm" role="group">
@@ -127,7 +148,7 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
                             </div>
 
                             <!-- ============================================== -->
-                            <!-- SECCIÓN: DATOS DE LA MOTO -->
+                            <!-- SECCIÓN: DATOS DE LA MOTO (VEHÍCULO) -->
                             <!-- ============================================== -->
                             <div class="mb-4">
                                 <div class="border-bottom pb-2 mb-3">
@@ -138,27 +159,31 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
 
                                 <div class="p-3 bg-light rounded-3 border mb-3">
                                     
-                                    <!-- Selector único de motos para el cliente -->
-                                    <div id="cajaSelectorMotosRegistradas" class="d-none mb-3">
-                                        <label class="form-label fw-semibold text-dark">Moto a ingresar:</label>
-                                        <select id="selectMotoDelCliente" class="form-select form-select-lg mb-2" onchange="alCambiarOpcionMoto()">
-                                            <!-- Opciones dinámicas generadas por JS -->
-                                        </select>
-                                        <input type="hidden" name="tipo_moto" id="inputTipoMoto" value="existente">
-                                        <input type="hidden" name="id_moto_existente" id="inputIdMotoExistente" value="">
-                                    </div>
+                                    <?php if (!$esSoloMoto): ?>
+                                        <!-- Selector de motos para el cliente cuando entra a taller -->
+                                        <div id="cajaSelectorMotosRegistradas" class="d-none mb-3">
+                                            <label class="form-label fw-semibold text-dark">Moto a ingresar:</label>
+                                            <select id="selectMotoDelCliente" class="form-select form-select-lg mb-2" onchange="alCambiarOpcionMoto()">
+                                                <!-- Opciones dinámicas generadas por JS -->
+                                            </select>
+                                            <input type="hidden" name="tipo_moto" id="inputTipoMoto" value="existente">
+                                            <input type="hidden" name="id_moto_existente" id="inputIdMotoExistente" value="<?php echo $motoPreseleccionada; ?>">
+                                        </div>
+                                    <?php else: ?>
+                                        <input type="hidden" name="tipo_moto" value="nueva">
+                                    <?php endif; ?>
 
-                                    <!-- Campos para cargar moto nueva (se muestran automáticamente si no tiene moto o si elige cargar una nueva) -->
+                                    <!-- Campos para cargar datos del vehículo -->
                                     <div id="cajaFormularioMotoNueva">
                                         <div class="row g-3">
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Patente / Dominio *</label>
                                                 <input type="text" name="patente" id="inputPatente" class="form-control text-uppercase font-monospace fw-bold" 
-                                                       placeholder="Ej: A123BCD" style="letter-spacing: 1px;">
+                                                       placeholder="Ej: A123BCD" style="letter-spacing: 1px;" required>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Marca *</label>
-                                                <input type="text" name="marca" id="inputMarca" list="listaMarcas" class="form-control" placeholder="Ej: Honda, Yamaha...">
+                                                <input type="text" name="marca" id="inputMarca" list="listaMarcas" class="form-control" placeholder="Ej: Honda, Yamaha..." required>
                                                 <datalist id="listaMarcas">
                                                     <option value="Honda">
                                                     <option value="Yamaha">
@@ -172,7 +197,7 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Modelo *</label>
-                                                <input type="text" name="modelo" id="inputModelo" class="form-control" placeholder="Ej: Wave 110s, YBR 125...">
+                                                <input type="text" name="modelo" id="inputModelo" class="form-control" placeholder="Ej: Wave 110s, YBR 125..." required>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Color</label>
@@ -192,46 +217,49 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
                                 </div>
                             </div>
 
-                            <!-- ============================================== -->
-                            <!-- SECCIÓN: TRABAJO A REALIZAR -->
-                            <!-- ============================================== -->
-                            <div class="mb-4">
-                                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
-                                    <i class="bi bi-wrench-adjustable text-primary me-1"></i> Trabajo a Realizar
-                                </h5>
-                                
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <label class="form-label fw-semibold text-danger">Falla Reportada / Arreglo por Hacer *</label>
-                                        <textarea name="falla_reportada" class="form-control" rows="3" 
-                                                  placeholder="Describí el problema reportado (Ej: No arranca en frío, cambio de transmisión, frenos traseros...)" required></textarea>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-semibold">Fecha Prometida de Entrega</label>
-                                        <input type="date" name="fecha_prometida" class="form-control" value="<?php echo date('Y-m-d', strtotime('+3 days')); ?>">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-semibold">Presupuesto Estimado ($)</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">$</span>
-                                            <input type="number" step="0.01" name="precio_estimado" class="form-control" placeholder="0.00">
+                            <?php if (!$esSoloMoto): ?>
+                                <!-- ============================================== -->
+                                <!-- SECCIÓN: ORDEN DE TRABAJO A REALIZAR (1FN Y 2FN) -->
+                                <!-- ============================================== -->
+                                <div class="mb-4">
+                                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                                        <i class="bi bi-wrench-adjustable text-primary me-1"></i> Trabajo a Realizar
+                                    </h5>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold text-danger">Falla Reportada / Arreglo por Hacer *</label>
+                                            <textarea name="falla_reportada" class="form-control" rows="3" 
+                                                      placeholder="Describí el problema reportado (Ej: No arranca en frío, cambio de transmisión, frenos traseros...)" required></textarea>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold">Fecha Prometida de Entrega</label>
+                                            <input type="date" name="fecha_prometida" class="form-control" value="<?php echo date('Y-m-d', strtotime('+3 days')); ?>">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold">Presupuesto Estimado ($)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" step="0.01" name="precio_estimado" class="form-control" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold">Estado Inicial</label>
+                                            <select name="estado" class="form-select">
+                                                <option value="En Espera" selected>🟡 En Espera</option>
+                                                <option value="En Reparacion">🔵 En Reparación</option>
+                                            </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-semibold">Estado Inicial</label>
-                                        <select name="estado" class="form-select">
-                                            <option value="En Espera" selected>🟡 En Espera</option>
-                                            <option value="En Reparacion">🔵 En Reparación</option>
-                                        </select>
-                                    </div>
                                 </div>
-                            </div>
+                            <?php endif; ?>
 
                             <!-- Botones de Acción -->
                             <div class="d-flex justify-content-end gap-2 border-top pt-4">
-                                <a href="motos.php" class="btn btn-secondary px-4">Cancelar</a>
-                                <button type="submit" class="btn btn-success btn-lg px-5 fw-bold shadow">
-                                    <i class="bi bi-check-circle-fill me-1"></i> Guardar Ingreso
+                                <a href="<?php echo $esSoloMoto ? 'motos.php' : 'trabajos.php'; ?>" class="btn btn-secondary px-4">Cancelar</a>
+                                <button type="submit" class="btn <?php echo $esSoloMoto ? 'btn-success' : 'btn-primary'; ?> btn-lg px-5 fw-bold shadow">
+                                    <i class="bi bi-check-circle-fill me-1"></i> 
+                                    <?php echo $esSoloMoto ? 'Guardar Moto en el Padrón' : 'Guardar Ingreso al Taller'; ?>
                                 </button>
                             </div>
 
@@ -244,9 +272,11 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
         </div>
     </div>
 
-    <!-- JavaScript simplificado -->
+    <!-- JavaScript para selector inteligente -->
     <script>
         const motosPorCliente = <?php echo json_encode($motosPorCliente); ?>;
+        const esSoloMoto = <?php echo $esSoloMoto ? 'true' : 'false'; ?>;
+        const motoPreseleccionada = <?php echo $motoPreseleccionada; ?>;
 
         function cambiarTipoCliente() {
             const esNuevo = document.getElementById('tipoNuevo').checked;
@@ -259,10 +289,11 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
                 seccionNuevo.classList.remove('d-none');
                 selectCliente.removeAttribute('required');
                 
-                // Cliente nuevo siempre ingresa moto nueva
                 mostrarFormularioMotoNueva(true);
-                document.getElementById('cajaSelectorMotosRegistradas').classList.add('d-none');
-                document.getElementById('inputTipoMoto').value = 'nueva';
+                const caja = document.getElementById('cajaSelectorMotosRegistradas');
+                if (caja) caja.classList.add('d-none');
+                const tipoMoto = document.getElementById('inputTipoMoto');
+                if (tipoMoto) tipoMoto.value = 'nueva';
             } else {
                 seccionExistente.classList.remove('d-none');
                 seccionNuevo.classList.add('d-none');
@@ -284,43 +315,47 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
                 document.getElementById('txtDirCliente').innerText = selectedOption.getAttribute('data-dir') || '-';
                 infoBox.classList.remove('d-none');
 
-                const motosDelCliente = motosPorCliente[idCliente] || [];
+                if (!esSoloMoto) {
+                    const motosDelCliente = motosPorCliente[idCliente] || [];
 
-                if (motosDelCliente.length > 0) {
-                    // Si el cliente tiene motos, las mostramos en un único desplegable limpio
-                    selectMotos.innerHTML = '';
-                    motosDelCliente.forEach(m => {
-                        const opt = document.createElement('option');
-                        opt.value = m.id_moto;
-                        opt.textContent = `${m.marca} ${m.modelo} (Patente: ${m.patente})`;
-                        selectMotos.appendChild(opt);
-                    });
+                    if (motosDelCliente.length > 0) {
+                        selectMotos.innerHTML = '';
+                        motosDelCliente.forEach(m => {
+                            const opt = document.createElement('option');
+                            opt.value = m.id_moto;
+                            opt.textContent = `${m.marca} ${m.modelo} (Patente: ${m.patente})`;
+                            if (motoPreseleccionada > 0 && m.id_moto == motoPreseleccionada) {
+                                opt.selected = true;
+                            }
+                            selectMotos.appendChild(opt);
+                        });
 
-                    // Agregamos la opción al final por si vino con otra moto
-                    const optNueva = document.createElement('option');
-                    optNueva.value = 'NUEVA';
-                    optNueva.textContent = '+ Agregar otra moto para este cliente...';
-                    selectMotos.appendChild(optNueva);
+                        const optNueva = document.createElement('option');
+                        optNueva.value = 'NUEVA';
+                        optNueva.textContent = '+ Agregar otra moto para este cliente...';
+                        selectMotos.appendChild(optNueva);
 
-                    cajaSelector.classList.remove('d-none');
-                    alCambiarOpcionMoto();
+                        cajaSelector.classList.remove('d-none');
+                        alCambiarOpcionMoto();
 
-                } else {
-                    // Si el cliente no tiene motos cargadas, mostramos los campos de moto directamente
-                    cajaSelector.classList.add('d-none');
-                    document.getElementById('inputTipoMoto').value = 'nueva';
-                    mostrarFormularioMotoNueva(true);
+                    } else {
+                        cajaSelector.classList.add('d-none');
+                        document.getElementById('inputTipoMoto').value = 'nueva';
+                        mostrarFormularioMotoNueva(true);
+                    }
                 }
 
             } else {
                 infoBox.classList.add('d-none');
-                cajaSelector.classList.add('d-none');
+                if (cajaSelector) cajaSelector.classList.add('d-none');
                 mostrarFormularioMotoNueva(true);
             }
         }
 
         function alCambiarOpcionMoto() {
+            if (esSoloMoto) return;
             const selectMotos = document.getElementById('selectMotoDelCliente');
+            if (!selectMotos) return;
             const valor = selectMotos.value;
 
             if (valor === 'NUEVA') {
@@ -340,6 +375,8 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
             const inMarca = document.getElementById('inputMarca');
             const inModelo = document.getElementById('inputModelo');
 
+            if (!caja) return;
+
             if (mostrar) {
                 caja.classList.remove('d-none');
                 inPatente.setAttribute('required', 'required');
@@ -357,15 +394,8 @@ $clientePreseleccionado = intval($_GET['cliente_id'] ?? 0);
             cambiarTipoCliente();
             
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('cliente_id')) {
+            if (urlParams.get('cliente_id') || urlParams.get('id_moto')) {
                 alSeleccionarCliente();
-                if (urlParams.get('nueva_moto') === '1') {
-                    const selectMotos = document.getElementById('selectMotoDelCliente');
-                    if (selectMotos) {
-                        selectMotos.value = 'NUEVA';
-                        alCambiarOpcionMoto();
-                    }
-                }
             }
         });
     </script>

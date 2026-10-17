@@ -2,6 +2,7 @@
 // ========================================================
 // ARCHIVO: conexion.php
 // OBJETIVO: Conexión PDO a MySQL (Local XAMPP e InfinityFree)
+// y Auto-migración a 1FN / 2FN (Creación de tabla trabajos)
 // ========================================================
 
 $isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1']) || php_sapi_name() === 'cli';
@@ -32,39 +33,64 @@ $opciones = [
 try {
     $pdo = new PDO($dsn, $user, $password, $opciones);
     
-    // Auto-actualización de estructura de la tabla motos (agrega columnas si no existen)
+    // Auto-migración y verificación de estructura para 1FN y 2FN
     try {
-        $cols = $pdo->query("SHOW COLUMNS FROM motos")->fetchAll(PDO::FETCH_COLUMN);
-        
-        if (!in_array('estado', $cols)) {
-            $pdo->exec("ALTER TABLE motos ADD COLUMN estado ENUM('En Espera', 'En Reparacion', 'Terminado', 'Entregado') DEFAULT 'En Espera'");
+        // 1. Asegurar tabla clientes
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `clientes` (
+          `id_cliente` INT AUTO_INCREMENT PRIMARY KEY,
+          `nombre` VARCHAR(100) NOT NULL,
+          `apellido` VARCHAR(100) NOT NULL,
+          `telefono` VARCHAR(20) NOT NULL,
+          `email` VARCHAR(100) NULL,
+          `direccion` VARCHAR(200) NULL,
+          `fecha_registro` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        // 2. Asegurar tabla motos (entidad vehículo)
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `motos` (
+          `id_moto` INT AUTO_INCREMENT PRIMARY KEY,
+          `id_cliente` INT NOT NULL,
+          `marca` VARCHAR(50) NOT NULL,
+          `modelo` VARCHAR(100) NOT NULL,
+          `anio` INT NULL,
+          `patente` VARCHAR(20) NOT NULL UNIQUE,
+          `color` VARCHAR(30) NULL,
+          `kilometraje` INT DEFAULT 0,
+          `fecha_registro` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (`id_cliente`) REFERENCES `clientes`(`id_cliente`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        // 3. Asegurar tabla trabajos (órdenes de servicio - evita anomalías de eliminación)
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `trabajos` (
+          `id_trabajo` INT AUTO_INCREMENT PRIMARY KEY,
+          `id_moto` INT NOT NULL,
+          `falla_reportada` TEXT NOT NULL,
+          `diagnostico` TEXT NULL,
+          `arreglo_realizado` TEXT NULL,
+          `repuestos` TEXT NULL,
+          `precio_estimado` DECIMAL(10,2) DEFAULT 0.00,
+          `precio_final` DECIMAL(10,2) DEFAULT 0.00,
+          `fecha_ingreso` DATETIME DEFAULT CURRENT_TIMESTAMP,
+          `fecha_prometida` DATE NULL,
+          `fecha_entrega` DATETIME NULL,
+          `estado` ENUM('En Espera', 'En Reparacion', 'Terminado', 'Entregado') DEFAULT 'En Espera',
+          `observaciones` TEXT NULL,
+          FOREIGN KEY (`id_moto`) REFERENCES `motos`(`id_moto`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        // Migración suave: si existen datos viejos en motos con falla_reportada, migrarlos a trabajos si trabajos está vacía
+        $countTrabajos = $pdo->query("SELECT COUNT(*) FROM trabajos")->fetchColumn();
+        if ($countTrabajos == 0) {
+            $colsMotos = $pdo->query("SHOW COLUMNS FROM motos")->fetchAll(PDO::FETCH_COLUMN);
+            if (in_array('falla_reportada', $colsMotos)) {
+                $pdo->exec("INSERT INTO trabajos (id_moto, falla_reportada, arreglo_realizado, repuestos, precio_estimado, precio_final, fecha_ingreso, fecha_prometida, fecha_entrega, estado)
+                            SELECT id_moto, COALESCE(falla_reportada, 'Revisión general'), arreglo_realizado, repuestos, precio_estimado, precio_final, COALESCE(fecha_ingreso, NOW()), fecha_prometida, fecha_entrega, COALESCE(estado, 'En Espera')
+                            FROM motos WHERE falla_reportada IS NOT NULL OR estado IS NOT NULL");
+            }
         }
-        if (!in_array('falla_reportada', $cols)) {
-            $pdo->exec("ALTER TABLE motos ADD COLUMN falla_reportada TEXT NULL");
-        }
-        if (!in_array('arreglo_realizado', $cols)) {
-            $pdo->exec("ALTER TABLE motos ADD COLUMN arreglo_realizado TEXT NULL");
-        }
-        if (!in_array('repuestos', $cols)) {
-            $pdo->exec("ALTER TABLE motos ADD COLUMN repuestos TEXT NULL");
-        }
-        if (!in_array('precio_estimado', $cols)) {
-            $pdo->exec("ALTER TABLE motos ADD COLUMN precio_estimado DECIMAL(10,2) DEFAULT 0.00");
-        }
-        if (!in_array('precio_final', $cols)) {
-            $pdo->exec("ALTER TABLE motos ADD COLUMN precio_final DECIMAL(10,2) DEFAULT 0.00");
-        }
-        if (!in_array('fecha_ingreso', $cols)) {
-            $pdo->exec("ALTER TABLE motos ADD COLUMN fecha_ingreso DATETIME DEFAULT CURRENT_TIMESTAMP");
-        }
-        if (!in_array('fecha_prometida', $cols)) {
-            $pdo->exec("ALTER TABLE motos ADD COLUMN fecha_prometida DATE NULL");
-        }
-        if (!in_array('fecha_entrega', $cols)) {
-            $pdo->exec("ALTER TABLE motos ADD COLUMN fecha_entrega DATETIME NULL");
-        }
+
     } catch (Exception $ex) {
-        // Continúa normalmente si ya están creadas
+        // Continúa normalmente
     }
 
 } catch (PDOException $e) {
