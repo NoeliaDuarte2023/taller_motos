@@ -127,10 +127,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        $fecha_entrega = ($estado === 'Entregado') ? date('Y-m-d H:i:s') : null;
+
         $sqlInsertTrabajo = "INSERT INTO trabajos (
-                                id_moto, falla_reportada, precio_estimado, estado, fecha_ingreso, fecha_prometida
+                                id_moto, falla_reportada, precio_estimado, estado, fecha_ingreso, fecha_prometida, fecha_entrega
                             ) VALUES (
-                                :id_moto, :falla_reportada, :precio_estimado, :estado, NOW(), :fecha_prometida
+                                :id_moto, :falla_reportada, :precio_estimado, :estado, NOW(), :fecha_prometida, :fecha_entrega
                             )";
 
         $stmtTrabajo = $pdo->prepare($sqlInsertTrabajo);
@@ -139,10 +141,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':falla_reportada' => $falla_reportada,
             ':precio_estimado' => $precio_estimado,
             ':estado'          => $estado,
-            ':fecha_prometida' => $fecha_prometida
+            ':fecha_prometida' => $fecha_prometida,
+            ':fecha_entrega'   => $fecha_entrega
         ]);
 
-        header('Location: trabajos.php?guardado=ok');
+        if ($estado === 'Entregado') {
+            header('Location: entregadas.php?entregada=ok');
+        } else {
+            header('Location: trabajos.php?guardado=ok');
+        }
         exit;
 
     } catch (PDOException $e) {

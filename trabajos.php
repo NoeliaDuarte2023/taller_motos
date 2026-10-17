@@ -122,17 +122,17 @@ foreach ($trabajos as $t) {
                     <!-- Botones de Filtro por Estado -->
                     <div class="col-md-6 text-md-end">
                         <div class="btn-group w-100 w-md-auto" role="group">
-                            <button type="button" class="btn btn-outline-dark btn-sm filter-btn active" onclick="filtrarPorEstado('TODOS', this)">
+                            <button type="button" class="btn btn-outline-dark btn-sm filter-btn active" id="btnFiltroTodos" onclick="filtrarPorEstado('TODOS', this)">
                                 Todos (<?php echo count($trabajos); ?>)
                             </button>
-                            <button type="button" class="btn btn-outline-warning btn-sm filter-btn text-dark" onclick="filtrarPorEstado('En Espera', this)">
+                            <button type="button" class="btn btn-outline-warning btn-sm filter-btn text-dark" id="btnFiltroEspera" onclick="filtrarPorEstado('En Espera', this)">
                                 🟡 En Espera (<?php echo $countEspera; ?>)
                             </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm filter-btn" onclick="filtrarPorEstado('En Reparacion', this)">
+                            <button type="button" class="btn btn-outline-primary btn-sm filter-btn" id="btnFiltroReparacion" onclick="filtrarPorEstado('En Reparacion', this)">
                                 🔵 En Reparación (<?php echo $countReparacion; ?>)
                             </button>
-                            <button type="button" class="btn btn-outline-success btn-sm filter-btn" onclick="filtrarPorEstado('Terminado', this)">
-                                🟢 Listas (<?php echo $countTerminado; ?>)
+                            <button type="button" class="btn btn-outline-success btn-sm filter-btn" id="btnFiltroListas" onclick="filtrarPorEstado('Terminado', this)">
+                                🟢 Listas para Entrega (<?php echo $countTerminado; ?>)
                             </button>
                         </div>
                     </div>
@@ -263,12 +263,45 @@ foreach ($trabajos as $t) {
                                             <?php endif; ?>
                                         </td>
 
-                                        <!-- Estado Actual -->
+                                        <!-- Estado Actual con Selector Rápido -->
                                         <td>
-                                            <span class="badge <?php echo $badgeClass; ?> p-2 d-inline-flex align-items-center gap-1">
-                                                <i class="bi <?php echo $badgeIcon; ?>"></i>
-                                                <?php echo htmlspecialchars($estado); ?>
-                                            </span>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm <?php echo ($estado === 'Terminado') ? 'btn-success text-white' : (($estado === 'En Reparacion') ? 'btn-primary text-white' : 'btn-warning text-dark'); ?> dropdown-toggle fw-semibold py-1.5 px-2.5 shadow-sm d-inline-flex align-items-center gap-1" 
+                                                        type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Hacé clic para cambiar de estado rápidamente">
+                                                    <i class="bi <?php echo $badgeIcon; ?>"></i>
+                                                    <?php 
+                                                        if ($estado === 'Terminado') echo '🟢 Lista';
+                                                        elseif ($estado === 'En Reparacion') echo '🔵 En Reparación';
+                                                        elseif ($estado === 'En Espera') echo '🟡 En Espera';
+                                                        else echo htmlspecialchars($estado);
+                                                    ?>
+                                                </button>
+                                                <ul class="dropdown-menu shadow border-0">
+                                                    <li><h6 class="dropdown-header small text-uppercase">Cambiar estado a:</h6></li>
+                                                    <li>
+                                                        <a class="dropdown-item py-1.5" href="cambiar_estado.php?id=<?php echo $t['id_trabajo']; ?>&estado=En Espera">
+                                                            🟡 <strong>En Espera</strong>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item py-1.5" href="cambiar_estado.php?id=<?php echo $t['id_trabajo']; ?>&estado=En Reparacion">
+                                                            🔵 <strong>En Reparación</strong>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item py-1.5 text-success" href="cambiar_estado.php?id=<?php echo $t['id_trabajo']; ?>&estado=Terminado">
+                                                            🟢 <strong>Marcar como LISTA</strong>
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider my-1"></li>
+                                                    <li>
+                                                        <a class="dropdown-item py-1.5 text-primary fw-bold" href="cambiar_estado.php?id=<?php echo $t['id_trabajo']; ?>&estado=Entregado"
+                                                           onclick="return confirm('¿Confirmás que la moto fue entregada al cliente? Pasará a la pestaña Entregadas.');">
+                                                            ⚪ <strong>Marcar como ENTREGADA ➔</strong>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </td>
 
                                         <!-- Acciones (ABM Trabajo) -->
@@ -330,10 +363,25 @@ foreach ($trabajos as $t) {
             
             // Actualizar clase activa en botones
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            boton.classList.add('active');
+            if (boton) boton.classList.add('active');
 
             filtrarTrabajos();
         }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const filtroParam = urlParams.get('filtro');
+            if (filtroParam === 'Terminado') {
+                const btn = document.getElementById('btnFiltroListas');
+                if (btn) filtrarPorEstado('Terminado', btn);
+            } else if (filtroParam === 'En Reparacion') {
+                const btn = document.getElementById('btnFiltroReparacion');
+                if (btn) filtrarPorEstado('En Reparacion', btn);
+            } else if (filtroParam === 'En Espera') {
+                const btn = document.getElementById('btnFiltroEspera');
+                if (btn) filtrarPorEstado('En Espera', btn);
+            }
+        });
     </script>
 
     <!-- Bootstrap 5 Bundle JS -->

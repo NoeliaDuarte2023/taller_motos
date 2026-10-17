@@ -7,10 +7,14 @@
 
 require_once 'conexion.php';
 
-// Consultamos clientes con la cantidad de motos registradas y el detalle de cada vehículo
+// Consultamos clientes con la cantidad de motos registradas y el detalle de cada vehículo con su estado
 $sqlClientes = "SELECT c.*, 
                 COUNT(m.id_moto) AS total_motos,
-                GROUP_CONCAT(CONCAT(m.marca, ' ', m.modelo, ' (', m.patente, ')') SEPARATOR '||') AS detalle_motos
+                GROUP_CONCAT(CONCAT(
+                    m.marca, ' ', m.modelo, ' (', m.patente, ')',
+                    '###',
+                    COALESCE((SELECT t.estado FROM trabajos t WHERE t.id_moto = m.id_moto ORDER BY t.id_trabajo DESC LIMIT 1), 'Sin orden')
+                ) SEPARATOR '||') AS detalle_motos
                 FROM clientes c
                 LEFT JOIN motos m ON c.id_cliente = m.id_cliente
                 GROUP BY c.id_cliente
@@ -151,9 +155,21 @@ $clientes = $stmt->fetchAll();
                                                 <span class="badge bg-light text-muted border">Sin motos asociadas</span>
                                             <?php else: ?>
                                                 <div class="d-flex flex-column gap-1">
-                                                    <?php foreach ($listaMotos as $mInfo): ?>
-                                                        <span class="badge bg-secondary text-start p-1.5 font-monospace text-truncate" style="max-width: 280px;">
-                                                            <i class="bi bi-bicycle me-1 text-warning"></i><?php echo htmlspecialchars($mInfo); ?>
+                                                    <?php foreach ($listaMotos as $mInfo): 
+                                                        $partes = explode('###', $mInfo);
+                                                        $nombreMoto = $partes[0];
+                                                        $estMoto = $partes[1] ?? 'Sin orden';
+                                                        $badgeMotoBg = 'bg-secondary';
+                                                        if ($estMoto === 'Terminado') $badgeMotoBg = 'bg-success text-white';
+                                                        if ($estMoto === 'En Reparacion') $badgeMotoBg = 'bg-primary text-white';
+                                                        if ($estMoto === 'En Espera') $badgeMotoBg = 'bg-warning text-dark';
+                                                        if ($estMoto === 'Entregado') $badgeMotoBg = 'bg-dark text-white';
+                                                    ?>
+                                                        <span class="badge <?php echo $badgeMotoBg; ?> text-start p-1.5 font-monospace text-truncate" style="max-width: 290px;">
+                                                            <i class="bi bi-bicycle me-1"></i><?php echo htmlspecialchars($nombreMoto); ?>
+                                                            <?php if ($estMoto !== 'Sin orden'): ?>
+                                                                <span class="badge bg-white text-dark ms-1" style="font-size: 10px;"><?php echo ($estMoto === 'Terminado') ? '🟢 Lista' : (($estMoto === 'Entregado') ? '⚪ Entregada' : htmlspecialchars($estMoto)); ?></span>
+                                                            <?php endif; ?>
                                                         </span>
                                                     <?php endforeach; ?>
                                                 </div>

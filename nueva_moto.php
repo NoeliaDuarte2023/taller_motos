@@ -244,10 +244,12 @@ if ($motoPreseleccionada > 0 && $clientePreseleccionado === 0) {
                                             </div>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">Estado Inicial</label>
-                                            <select name="estado" class="form-select">
+                                            <label class="form-label fw-semibold">Estado del Trabajo</label>
+                                            <select name="estado" class="form-select fw-semibold">
                                                 <option value="En Espera" selected>🟡 En Espera</option>
                                                 <option value="En Reparacion">🔵 En Reparación</option>
+                                                <option value="Terminado">🟢 Terminado (Lista para entregar)</option>
+                                                <option value="Entregado">⚪ Entregado (Ya retirada por el cliente)</option>
                                             </select>
                                         </div>
                                     </div>

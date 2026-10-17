@@ -194,7 +194,13 @@ $motos = $stmtMotos->fetchAll();
                                         <!-- Historial en Taller -->
                                         <td>
                                             <span class="badge <?php echo $badgeClass; ?> p-1.5 px-2">
-                                                <?php echo htmlspecialchars($estado); ?>
+                                                <?php 
+                                                    if ($estado === 'Terminado') echo '🟢 Lista para entrega';
+                                                    elseif ($estado === 'Entregado') echo '⚪ Entregada';
+                                                    elseif ($estado === 'En Reparacion') echo '🔵 En Reparación';
+                                                    elseif ($estado === 'En Espera') echo '🟡 En Espera';
+                                                    else echo '⚪ Sin trabajos';
+                                                ?>
                                             </span>
                                             <small class="d-block text-muted mt-1">
                                                 <?php echo $m['total_trabajos']; ?> trabajo(s) en total
