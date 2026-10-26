@@ -88,7 +88,11 @@ $clientes = $pdo->query("SELECT id_cliente, nombre, apellido, telefono FROM clie
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Patente / Dominio *</label>
                                     <input type="text" name="patente" class="form-control text-uppercase font-monospace fw-bold" 
-                                           value="<?php echo htmlspecialchars($moto['patente']); ?>" required>
+                                           value="<?php echo htmlspecialchars($moto['patente']); ?>" 
+                                           pattern="^([A-Za-z]{1}[0-9]{3}[A-Za-z]{3}|[0-9]{3}[A-Za-z]{3}|[A-Za-z]{3}[0-9]{3}|[A-Za-z]{2}[0-9]{3}[A-Za-z]{2})$" 
+                                           title="Formato válido: A123BCD (motos Mercosur), OBJ123 o 123ABC" 
+                                           required>
+                                    <small class="text-muted" style="font-size: 11px;">Formatos válidos: A123BCD, OBJ123, 123ABC</small>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Marca *</label>

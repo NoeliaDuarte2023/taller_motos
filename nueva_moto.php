@@ -179,7 +179,11 @@ if ($motoPreseleccionada > 0 && $clientePreseleccionado === 0) {
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Patente / Dominio *</label>
                                                 <input type="text" name="patente" id="inputPatente" class="form-control text-uppercase font-monospace fw-bold" 
-                                                       placeholder="Ej: A123BCD" style="letter-spacing: 1px;" required>
+                                                       placeholder="Ej: A123BCD o OBJ123" 
+                                                       pattern="^([A-Za-z]{1}[0-9]{3}[A-Za-z]{3}|[0-9]{3}[A-Za-z]{3}|[A-Za-z]{3}[0-9]{3}|[A-Za-z]{2}[0-9]{3}[A-Za-z]{2})$" 
+                                                       title="Formato válido: A123BCD (motos Mercosur), OBJ123 o 123ABC" 
+                                                       style="letter-spacing: 1px;" required>
+                                                <small class="text-muted" style="font-size: 11px;">Formatos: A123BCD, OBJ123, 123ABC</small>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Marca *</label>

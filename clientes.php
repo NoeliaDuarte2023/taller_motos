@@ -53,6 +53,9 @@ $clientes = $stmt->fetchAll();
                 <a href="nuevo_cliente.php" class="btn btn-primary fw-bold shadow-sm">
                     <i class="bi bi-person-plus-fill me-1"></i> + Nuevo Cliente
                 </a>
+                <a href="nueva_moto.php?solo_moto=1" class="btn btn-success fw-bold shadow-sm">
+                    <i class="bi bi-plus-circle-fill me-1"></i> + Registrar Moto
+                </a>
             </div>
         </div>
 
@@ -176,12 +179,9 @@ $clientes = $stmt->fetchAll();
                                             <?php endif; ?>
                                         </td>
 
-                                        <!-- Acciones -->
+                                        <!-- Acciones del Cliente -->
                                         <td class="text-center">
                                             <div class="btn-group btn-group-sm">
-                                                <a href="nueva_moto.php?cliente_id=<?php echo $c['id_cliente']; ?>&solo_moto=1" class="btn btn-outline-success" title="Registrar Moto para este cliente">
-                                                    <i class="bi bi-plus-circle me-1"></i> + Moto
-                                                </a>
                                                 <a href="editar_cliente.php?id=<?php echo $c['id_cliente']; ?>" class="btn btn-outline-warning" title="Editar Cliente">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
