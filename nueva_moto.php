@@ -129,19 +129,19 @@ if ($motoPreseleccionada > 0 && $clientePreseleccionado === 0) {
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label class="form-label fw-semibold">Nombre *</label>
-                                            <input type="text" name="nuevo_nombre" id="nuevo_nombre" class="form-control" placeholder="Ej: Lucas">
+                                            <input type="text" name="nuevo_nombre" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{1,99}" title="Solo letras, espacios, apóstrofes y guiones (sin números)." id="nuevo_nombre" class="form-control" placeholder="Ej: Lucas">
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label fw-semibold">Apellido *</label>
-                                            <input type="text" name="nuevo_apellido" id="nuevo_apellido" class="form-control" placeholder="Ej: Gómez">
+                                            <input type="text" name="nuevo_apellido" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{1,99}" title="Solo letras, espacios, apóstrofes y guiones (sin números)." id="nuevo_apellido" class="form-control" placeholder="Ej: Gómez">
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label fw-semibold">Teléfono *</label>
-                                            <input type="text" name="nuevo_telefono" id="nuevo_telefono" class="form-control" placeholder="Ej: 3794123456">
+                                            <input type="text" name="nuevo_telefono" maxlength="20" inputmode="tel" pattern="\+?[0-9 \(\)\-.]{8,20}" title="Solo números (entre 8 y 15 dígitos). Podés usar espacios, guiones, paréntesis y + al inicio." id="nuevo_telefono" class="form-control" placeholder="Ej: 3794123456">
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label fw-semibold">Dirección</label>
-                                            <input type="text" name="nuevo_direccion" id="nuevo_direccion" class="form-control" placeholder="Ej: Av. San Martín 450">
+                                            <input type="text" name="nuevo_direccion" maxlength="200" pattern="(?=(?:.*[A-Za-zÀ-ÿ]){3})[A-Za-zÀ-ÿ0-9 .,°º#\/'\-]{5,200}" title="Dirección real: nombre de calle o barrio con letras y, si corresponde, número. Ej: Av. San Martín 450." id="nuevo_direccion" class="form-control" placeholder="Ej: Av. San Martín 450">
                                         </div>
                                     </div>
                                 </div>
@@ -187,7 +187,7 @@ if ($motoPreseleccionada > 0 && $clientePreseleccionado === 0) {
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Marca *</label>
-                                                <input type="text" name="marca" id="inputMarca" list="listaMarcas" class="form-control" placeholder="Ej: Honda, Yamaha..." required>
+                                                <input type="text" name="marca" maxlength="50" id="inputMarca" list="listaMarcas" class="form-control" placeholder="Ej: Honda, Yamaha..." required>
                                                 <datalist id="listaMarcas">
                                                     <option value="Honda">
                                                     <option value="Yamaha">
@@ -201,19 +201,19 @@ if ($motoPreseleccionada > 0 && $clientePreseleccionado === 0) {
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Modelo *</label>
-                                                <input type="text" name="modelo" id="inputModelo" class="form-control" placeholder="Ej: Wave 110s, YBR 125..." required>
+                                                <input type="text" name="modelo" maxlength="100" id="inputModelo" class="form-control" placeholder="Ej: Wave 110s, YBR 125..." required>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Color</label>
-                                                <input type="text" name="color" id="inputColor" class="form-control" placeholder="Ej: Rojo, Negro">
+                                                <input type="text" name="color" maxlength="30" id="inputColor" class="form-control" placeholder="Ej: Rojo, Negro">
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Año</label>
-                                                <input type="number" name="anio" id="inputAnio" class="form-control" placeholder="Ej: 2022" min="1970" max="2030">
+                                                <input type="number" name="anio" id="inputAnio" class="form-control" placeholder="Ej: 2022" min="1950" max="<?php echo date('Y') + 1; ?>">
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label fw-semibold">Kilometraje Actual</label>
-                                                <input type="number" name="kilometraje" id="inputKm" class="form-control" placeholder="Ej: 15400" min="0">
+                                                <input type="number" name="kilometraje" max="999999" id="inputKm" class="form-control" placeholder="Ej: 15400" min="0">
                                             </div>
                                         </div>
                                     </div>
@@ -238,13 +238,13 @@ if ($motoPreseleccionada > 0 && $clientePreseleccionado === 0) {
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label fw-semibold">Fecha Prometida de Entrega</label>
-                                            <input type="date" name="fecha_prometida" class="form-control" value="<?php echo date('Y-m-d', strtotime('+3 days')); ?>">
+                                            <input type="date" name="fecha_prometida" class="form-control" min="2026-08-01" max="<?php echo date('Y-m-d', strtotime('+1 year')); ?>" value="<?php echo date('Y-m-d', strtotime('+3 days')); ?>">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label fw-semibold">Presupuesto Estimado ($)</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">$</span>
-                                                <input type="number" step="0.01" name="precio_estimado" class="form-control" placeholder="0.00">
+                                                <input type="number" step="0.01" name="precio_estimado" min="0" max="99999999.99" class="form-control" placeholder="0.00">
                                             </div>
                                         </div>
                                         <div class="col-md-4">

@@ -1,0 +1,55 @@
+VALIDACIONES NUEVAS - Taller de Motos (Programacion III)
+
+COMO APLICARLAS
+1. Copiá TODOS los archivos de esta carpeta dentro de la carpeta raíz de tu proyecto
+   (donde está conexion.php), y aceptá "reemplazar" cuando pregunte.
+2. validaciones.php es un archivo NUEVO: tiene que quedar al lado de los demás.
+3. No cambia la base de datos: no hay que ejecutar ningún SQL.
+4. Probá en el navegador con los casos de la lista de abajo.
+
+QUE CONTROLA AHORA (en el servidor, aunque el navegador no lo frene)
+- Nombre y apellido: solo letras, espacios, apóstrofe y guion (sin números). 2 a 100 caracteres.
+- Teléfono: 8 a 15 números (acepta espacios, guiones, paréntesis y + al inicio). Sin letras.
+  Rechaza números repetidos (11111111).
+- Email (si se completa): formato válido.
+- Dirección (si se completa): 5 a 200 caracteres, con nombre de calle o barrio (letras).
+  Rechaza "12345", "?????" y símbolos raros.
+- Patente: formato oficial (ya estaba) + ahora se valida ANTES de guardar al cliente.
+- Marca y modelo: obligatorios, con al menos una letra. Color: opcional.
+- Año: entre 1950 y el año que viene. Kilometraje: 0 a 999.999.
+- Fecha prometida (alta): fecha real, desde el 01/08/2026 (inicio del sistema) hasta 1 año.
+- Fecha prometida (edición): fecha real, desde el 01/08/2026 hasta 5 años.
+- Fecha de entrega: fecha y hora reales, puede ser futura, pero no anterior al ingreso del trabajo (tope: 5 años).
+- Precios: número positivo, hasta 2 decimales.
+- Falla / arreglo / descripción: con palabras (no solo números o símbolos).
+- Repuestos: código sin espacios (letras, números y - _ . /), stock entero.
+- Mecánicos: nombre sin números; teléfono y especialidad opcionales pero válidos.
+
+MEJORA EXTRA
+- En "Nueva moto" (guardar_moto.php) ahora se valida TODO antes de guardar. Antes, si la patente
+  estaba mal, el cliente nuevo ya se había guardado y al reintentar se duplicaba.
+
+ARCHIVOS QUE CAMBIAN
+validaciones.php (nuevo), guardar_cliente, actualizar_cliente, guardar_moto, actualizar_moto,
+actualizar_trabajo, guardar_mecanico, actualizar_mecanico, guardar_repuesto, actualizar_repuesto,
+y los formularios: nuevo_cliente, editar_cliente, nueva_moto, editar_moto, editar_trabajo,
+nuevo_mecanico, editar_mecanico, nuevo_repuesto, editar_repuesto.
+
+PRUEBAS PARA MOSTRAR AL PROFE
+- Cliente con teléfono "abc123"  -> rechaza.
+- Cliente con nombre "Juan3"     -> rechaza.
+- Dirección "12345"              -> rechaza.
+- Moto con patente "12345"       -> rechaza y no guarda al cliente.
+- Moto con año 333 o 3000        -> rechaza.
+- Fecha prometida anterior al 01/08/2026 -> rechaza.
+- Entrega con fecha futura       -> la acepta (hasta 5 años).
+- Precio negativo                -> rechaza.
+
+CAMBIAR LA FECHA DE INICIO
+La fecha mínima (01/08/2026) está en validaciones.php, línea FECHA_INICIO_SISTEMA.
+En nueva_moto.php y editar_trabajo.php aparece también como min="2026-08-01".
+
+== NUEVO: historial de la moto ==
+- historial_moto.php (nuevo): al hacer clic en la patente se ve la ficha de la moto,
+  su dueño y todos sus trabajos (falla, arreglo, repuestos, fechas, precios, estado).
+- motos.php, trabajos.php y entregadas.php: la patente ahora es un enlace al historial.

@@ -1,13 +1,19 @@
 <?php
 require_once 'conexion.php';
+require_once 'validaciones.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
-    $codigo          = strtoupper(trim($_POST['codigo'] ?? ''));
-    $descripcion     = trim($_POST['descripcion'] ?? '');
-    $precio_unitario = !empty($_POST['precio_unitario']) ? floatval($_POST['precio_unitario']) : 0.00;
-    $stock           = isset($_POST['stock']) ? intval($_POST['stock']) : 0;
-    $stock_minimo    = isset($_POST['stock_minimo']) ? intval($_POST['stock_minimo']) : 2;
+    // Validación de datos (ver validaciones.php)
+    $errores         = [];
+    $codigo          = v_codigo($_POST['codigo'] ?? '', 'El código', $errores);
+    $descripcion     = v_texto($_POST['descripcion'] ?? '', 'La descripción', $errores, true, 3, 150);
+    $precio_unitario = v_decimal($_POST['precio_unitario'] ?? '', 'El precio unitario', $errores, 0, 99999999.99);
+    $stock           = v_entero($_POST['stock'] ?? '', 'El stock', $errores, 0, 1000000, 0);
+    $stock_minimo    = v_entero($_POST['stock_minimo'] ?? '', 'El stock mínimo', $errores, 0, 1000000, 2);
+    if (!empty($errores)) {
+        v_mostrar_errores($errores, 'Datos del repuesto inválidos');
+    }
 
     if (!empty($codigo) && !empty($descripcion) && $precio_unitario >= 0) {
         

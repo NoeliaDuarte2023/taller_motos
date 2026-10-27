@@ -46,17 +46,17 @@ require_once 'conexion.php';
                             
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Nombre y Apellido *</label>
-                                <input type="text" name="nombre" class="form-control" placeholder="Ej: Carlos Méndez" required>
+                                <input type="text" name="nombre" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{1,99}" title="Solo letras, espacios, apóstrofes y guiones (sin números)." class="form-control" placeholder="Ej: Carlos Méndez" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Teléfono</label>
-                                <input type="tel" name="telefono" class="form-control" placeholder="Ej: 1144556677">
+                                <input type="tel" name="telefono" maxlength="20" inputmode="tel" pattern="\+?[0-9 \(\)\-.]{8,20}" title="Solo números (entre 8 y 15 dígitos). Podés usar espacios, guiones, paréntesis y + al inicio." class="form-control" placeholder="Ej: 1144556677">
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Especialidad</label>
-                                <input type="text" name="especialidad" class="form-control" placeholder="Ej: Motores, Electricidad, Frenos">
+                                <input type="text" name="especialidad" maxlength="100" class="form-control" placeholder="Ej: Motores, Electricidad, Frenos">
                             </div>
 
                             <div class="mb-3">

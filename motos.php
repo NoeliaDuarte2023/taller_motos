@@ -150,9 +150,7 @@ $motos = $stmtMotos->fetchAll();
                                         
                                         <!-- Patente -->
                                         <td>
-                                            <span class="badge bg-dark badge-patente border border-secondary text-warning">
-                                                <?php echo htmlspecialchars($m['patente']); ?>
-                                            </span>
+                                            <a href="historial_moto.php?id=<?php echo (int)$m['id_moto']; ?>" class="text-decoration-none" title="Ver historial de esta moto"><span class="badge bg-dark badge-patente border border-secondary text-warning"><?php echo htmlspecialchars($m['patente']); ?> <i class="bi bi-clock-history ms-1"></i></span></a>
                                         </td>
 
                                         <!-- Marca y Modelo -->

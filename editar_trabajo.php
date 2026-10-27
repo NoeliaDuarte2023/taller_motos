@@ -99,12 +99,12 @@ $estadoActual = $trabajo['estado'] ?? 'En Espera';
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label fw-semibold">Fecha Prometida de Entrega</label>
-                                        <input type="date" name="fecha_prometida" class="form-control" 
+                                        <input type="date" name="fecha_prometida" min="2026-08-01" max="<?php echo date('Y-m-d', strtotime('+5 years')); ?>" class="form-control" 
                                                value="<?php echo !empty($trabajo['fecha_prometida']) ? $trabajo['fecha_prometida'] : ''; ?>">
                                     </div>
                                     <div class="col-md-4" id="cajaFechaEntrega">
                                         <label class="form-label fw-semibold text-success">Fecha y Hora de Entrega</label>
-                                        <input type="datetime-local" name="fecha_entrega" id="inputFechaEntrega" class="form-control" 
+                                        <input type="datetime-local" name="fecha_entrega" min="<?php echo !empty($trabajo['fecha_ingreso']) ? date('Y-m-d\TH:i', strtotime($trabajo['fecha_ingreso'])) : ''; ?>" max="<?php echo date('Y-m-d\TH:i', strtotime('+5 years')); ?>" id="inputFechaEntrega" class="form-control" 
                                                value="<?php echo !empty($trabajo['fecha_entrega']) ? date('Y-m-d\TH:i', strtotime($trabajo['fecha_entrega'])) : ''; ?>">
                                     </div>
                                 </div>
@@ -121,17 +121,17 @@ $estadoActual = $trabajo['estado'] ?? 'En Espera';
                                 <div class="row g-3">
                                     <div class="col-12">
                                         <label class="form-label fw-semibold text-danger">Falla Reportada por el Cliente *</label>
-                                        <textarea name="falla_reportada" class="form-control" rows="2" required><?php echo htmlspecialchars($trabajo['falla_reportada'] ?? ''); ?></textarea>
+                                        <textarea name="falla_reportada" maxlength="1000" class="form-control" rows="2" required><?php echo htmlspecialchars($trabajo['falla_reportada'] ?? ''); ?></textarea>
                                     </div>
 
                                     <div class="col-md-6">
                                         <label class="form-label fw-semibold text-success">Trabajo / Arreglo Realizado</label>
-                                        <textarea name="arreglo_realizado" class="form-control" rows="3" placeholder="Detallá los trabajos realizados por el mecánico..."><?php echo htmlspecialchars($trabajo['arreglo_realizado'] ?? ''); ?></textarea>
+                                        <textarea name="arreglo_realizado" maxlength="2000" class="form-control" rows="3" placeholder="Detallá los trabajos realizados por el mecánico..."><?php echo htmlspecialchars($trabajo['arreglo_realizado'] ?? ''); ?></textarea>
                                     </div>
 
                                     <div class="col-md-6">
                                         <label class="form-label fw-semibold text-secondary">Repuestos Utilizados</label>
-                                        <textarea name="repuestos" class="form-control" rows="3" placeholder="Ej: Aceite 20w50, Filtro, Bujía..."><?php echo htmlspecialchars($trabajo['repuestos'] ?? ''); ?></textarea>
+                                        <textarea name="repuestos" maxlength="1000" class="form-control" rows="3" placeholder="Ej: Aceite 20w50, Filtro, Bujía..."><?php echo htmlspecialchars($trabajo['repuestos'] ?? ''); ?></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -149,7 +149,7 @@ $estadoActual = $trabajo['estado'] ?? 'En Espera';
                                         <label class="form-label fw-semibold">Precio Estimado Inicial ($)</label>
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
-                                            <input type="number" step="0.01" name="precio_estimado" class="form-control" 
+                                            <input type="number" step="0.01" name="precio_estimado" min="0" max="99999999.99" class="form-control" 
                                                    value="<?php echo htmlspecialchars($trabajo['precio_estimado'] ?? '0.00'); ?>">
                                         </div>
                                     </div>
@@ -157,7 +157,7 @@ $estadoActual = $trabajo['estado'] ?? 'En Espera';
                                         <label class="form-label fw-semibold text-success">Precio Final Cobrado ($)</label>
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
-                                            <input type="number" step="0.01" name="precio_final" class="form-control fw-bold" 
+                                            <input type="number" step="0.01" name="precio_final" min="0" max="99999999.99" class="form-control fw-bold" 
                                                    value="<?php echo htmlspecialchars($trabajo['precio_final'] ?? '0.00'); ?>">
                                         </div>
                                     </div>

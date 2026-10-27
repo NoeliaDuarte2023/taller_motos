@@ -51,27 +51,27 @@ if (!$cliente) {
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Nombre *</label>
-                                <input type="text" name="nombre" class="form-control" value="<?php echo htmlspecialchars($cliente['nombre']); ?>" required>
+                                <input type="text" name="nombre" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{1,99}" title="Solo letras, espacios, apóstrofes y guiones (sin números)." class="form-control" value="<?php echo htmlspecialchars($cliente['nombre']); ?>" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Apellido *</label>
-                                <input type="text" name="apellido" class="form-control" value="<?php echo htmlspecialchars($cliente['apellido']); ?>" required>
+                                <input type="text" name="apellido" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{1,99}" title="Solo letras, espacios, apóstrofes y guiones (sin números)." class="form-control" value="<?php echo htmlspecialchars($cliente['apellido']); ?>" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Teléfono *</label>
-                                <input type="tel" name="telefono" class="form-control" value="<?php echo htmlspecialchars($cliente['telefono']); ?>" required>
+                                <input type="tel" name="telefono" maxlength="20" inputmode="tel" pattern="\+?[0-9 \(\)\-.]{8,20}" title="Solo números (entre 8 y 15 dígitos). Podés usar espacios, guiones, paréntesis y + al inicio." class="form-control" value="<?php echo htmlspecialchars($cliente['telefono']); ?>" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Email</label>
-                                <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($cliente['email'] ?? ''); ?>">
+                                <input type="email" name="email" maxlength="100" class="form-control" value="<?php echo htmlspecialchars($cliente['email'] ?? ''); ?>">
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Dirección</label>
-                                <input type="text" name="direccion" class="form-control" value="<?php echo htmlspecialchars($cliente['direccion'] ?? ''); ?>">
+                                <input type="text" name="direccion" maxlength="200" pattern="(?=(?:.*[A-Za-zÀ-ÿ]){3})[A-Za-zÀ-ÿ0-9 .,°º#\/'\-]{5,200}" title="Dirección real: nombre de calle o barrio con letras y, si corresponde, número. Ej: Av. San Martín 450." class="form-control" value="<?php echo htmlspecialchars($cliente['direccion'] ?? ''); ?>">
                             </div>
 
                             <div class="d-flex justify-content-between gap-2 mt-4">

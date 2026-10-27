@@ -5,6 +5,8 @@
 // y Auto-migración a 1FN / 2FN (Creación de tabla trabajos)
 // ========================================================
 
+require_once __DIR__ . '/validaciones.php';
+
 $isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1']) || php_sapi_name() === 'cli';
 
 if ($isLocal) {

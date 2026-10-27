@@ -37,27 +37,27 @@ require_once 'conexion.php';
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Nombre *</label>
-                                    <input type="text" name="nombre" class="form-control" placeholder="Ej: Juan" required>
+                                    <input type="text" name="nombre" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{1,99}" title="Solo letras, espacios, apóstrofes y guiones (sin números)." class="form-control" placeholder="Ej: Juan" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Apellido *</label>
-                                    <input type="text" name="apellido" class="form-control" placeholder="Ej: Pérez" required>
+                                    <input type="text" name="apellido" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{1,99}" title="Solo letras, espacios, apóstrofes y guiones (sin números)." class="form-control" placeholder="Ej: Pérez" required>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Teléfono / WhatsApp *</label>
-                                <input type="tel" name="telefono" class="form-control" placeholder="Ej: 1122334455" required>
+                                <input type="tel" name="telefono" maxlength="20" inputmode="tel" pattern="\+?[0-9 \(\)\-.]{8,20}" title="Solo números (entre 8 y 15 dígitos). Podés usar espacios, guiones, paréntesis y + al inicio." class="form-control" placeholder="Ej: 1122334455" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Correo Electrónico</label>
-                                <input type="email" name="email" class="form-control" placeholder="juan.perez@email.com">
+                                <input type="email" name="email" maxlength="100" class="form-control" placeholder="juan.perez@email.com">
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Dirección</label>
-                                <input type="text" name="direccion" class="form-control" placeholder="Av. San Martín 1234">
+                                <input type="text" name="direccion" maxlength="200" pattern="(?=(?:.*[A-Za-zÀ-ÿ]){3})[A-Za-zÀ-ÿ0-9 .,°º#\/'\-]{5,200}" title="Dirección real: nombre de calle o barrio con letras y, si corresponde, número. Ej: Av. San Martín 450." class="form-control" placeholder="Av. San Martín 1234">
                             </div>
 
                             <div class="d-flex justify-content-between gap-2 mt-4 pt-3 border-top">

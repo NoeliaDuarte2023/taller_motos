@@ -1,13 +1,19 @@
 <?php
 require_once 'conexion.php';
+require_once 'validaciones.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $id_mecanico  = $_POST['id_mecanico'] ?? '';
-    $nombre       = trim($_POST['nombre'] ?? '');
-    $telefono     = trim($_POST['telefono'] ?? null);
-    $especialidad = trim($_POST['especialidad'] ?? null);
-    $estado       = $_POST['estado'] ?? 'Activo';
+    // Validación de datos (ver validaciones.php)
+    $errores      = [];
+    $nombre       = v_nombre($_POST['nombre'] ?? '', 'El nombre del mecánico', $errores, true, 100);
+    $telefono     = v_telefono($_POST['telefono'] ?? '', 'El teléfono', $errores, false);
+    $especialidad = v_alfanum($_POST['especialidad'] ?? '', 'La especialidad', $errores, false, 100);
+    $estado       = v_opcion($_POST['estado'] ?? '', ['Activo', 'Inactivo'], 'El estado', $errores, 'Activo');
+    if (!empty($errores)) {
+        v_mostrar_errores($errores, 'Datos del mecánico inválidos');
+    }
 
     if (!empty($id_mecanico) && !empty($nombre)) {
         

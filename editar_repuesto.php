@@ -50,27 +50,27 @@ if (!$repuesto) {
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Código del Repuesto *</label>
-                                <input type="text" name="codigo" class="form-control" value="<?php echo htmlspecialchars($repuesto['codigo']); ?>" required>
+                                <input type="text" name="codigo" maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_.\/\-]{1,29}" title="2 a 30 caracteres: letras, números y - _ . / (sin espacios)." class="form-control" value="<?php echo htmlspecialchars($repuesto['codigo']); ?>" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Descripción / Nombre *</label>
-                                <input type="text" name="descripcion" class="form-control" value="<?php echo htmlspecialchars($repuesto['descripcion']); ?>" required>
+                                <input type="text" name="descripcion" maxlength="150" class="form-control" value="<?php echo htmlspecialchars($repuesto['descripcion']); ?>" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Precio Unitario ($) *</label>
-                                <input type="number" step="0.01" name="precio_unitario" class="form-control" value="<?php echo htmlspecialchars($repuesto['precio_unitario']); ?>" required min="0">
+                                <input type="number" step="0.01" name="precio_unitario" max="99999999.99" class="form-control" value="<?php echo htmlspecialchars($repuesto['precio_unitario']); ?>" required min="0">
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Stock Actual *</label>
-                                    <input type="number" name="stock" class="form-control" value="<?php echo htmlspecialchars($repuesto['stock']); ?>" required min="0">
+                                    <input type="number" name="stock" max="1000000" class="form-control" value="<?php echo htmlspecialchars($repuesto['stock']); ?>" required min="0">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Stock Mínimo</label>
-                                    <input type="number" name="stock_minimo" class="form-control" value="<?php echo htmlspecialchars($repuesto['stock_minimo']); ?>" min="0">
+                                    <input type="number" name="stock_minimo" max="1000000" class="form-control" value="<?php echo htmlspecialchars($repuesto['stock_minimo']); ?>" min="0">
                                 </div>
                             </div>
 

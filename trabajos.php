@@ -189,9 +189,7 @@ foreach ($trabajos as $t) {
                                         
                                         <!-- Patente y Vehículo -->
                                         <td>
-                                            <span class="badge bg-dark badge-patente border border-secondary text-warning">
-                                                <?php echo htmlspecialchars($t['patente']); ?>
-                                            </span>
+                                            <a href="historial_moto.php?id=<?php echo (int)$t['id_moto']; ?>" class="text-decoration-none" title="Ver historial de esta moto"><span class="badge bg-dark badge-patente border border-secondary text-warning"><?php echo htmlspecialchars($t['patente']); ?> <i class="bi bi-clock-history ms-1"></i></span></a>
                                             <div class="fw-bold mt-1 text-dark">
                                                 <?php echo htmlspecialchars($t['marca'] . ' ' . $t['modelo']); ?>
                                             </div>

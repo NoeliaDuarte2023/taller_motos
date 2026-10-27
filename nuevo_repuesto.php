@@ -46,27 +46,27 @@ require_once 'conexion.php';
                             
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Código del Repuesto *</label>
-                                <input type="text" name="codigo" class="form-control" placeholder="Ej: ACE-10W40, BUJ-01" required>
+                                <input type="text" name="codigo" maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_.\/\-]{1,29}" title="2 a 30 caracteres: letras, números y - _ . / (sin espacios)." class="form-control" placeholder="Ej: ACE-10W40, BUJ-01" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Descripción / Nombre *</label>
-                                <input type="text" name="descripcion" class="form-control" placeholder="Ej: Aceite Motul 5100 1L" required>
+                                <input type="text" name="descripcion" maxlength="150" class="form-control" placeholder="Ej: Aceite Motul 5100 1L" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Precio Unitario ($) *</label>
-                                <input type="number" step="0.01" name="precio_unitario" class="form-control" placeholder="Ej: 12500.00" required min="0">
+                                <input type="number" step="0.01" name="precio_unitario" max="99999999.99" class="form-control" placeholder="Ej: 12500.00" required min="0">
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Stock Inicial *</label>
-                                    <input type="number" name="stock" class="form-control" placeholder="Ej: 10" required min="0">
+                                    <input type="number" name="stock" max="1000000" class="form-control" placeholder="Ej: 10" required min="0">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Stock Mínimo (Alerta)</label>
-                                    <input type="number" name="stock_minimo" class="form-control" value="2" min="0">
+                                    <input type="number" name="stock_minimo" max="1000000" class="form-control" value="2" min="0">
                                 </div>
                             </div>
 

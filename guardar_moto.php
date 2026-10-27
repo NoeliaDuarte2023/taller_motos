@@ -8,6 +8,7 @@
 // ========================================================
 
 require_once 'conexion.php';
+require_once 'validaciones.php';
 
 // Función para validar formato oficial de patente (Motos y Autos Argentina / Mercosur)
 if (!function_exists('validarFormatoPatente')) {
@@ -32,6 +33,58 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $tipo_cliente = $_POST['tipo_cliente'] ?? 'existente';
     $esSoloMoto   = isset($_POST['solo_moto']) && $_POST['solo_moto'] == '1';
     $id_cliente   = null;
+
+    // ========================================================
+    // PASO 0: VALIDAR TODO ANTES DE GUARDAR NADA
+    // (así no queda un cliente o una moto a medias si hay un error)
+    // ========================================================
+    $errores = [];
+
+    if ($tipo_cliente === 'nuevo') {
+        $_POST['nuevo_nombre']    = v_nombre($_POST['nuevo_nombre'] ?? '', 'El nombre', $errores, true, 100);
+        $_POST['nuevo_apellido']  = v_nombre($_POST['nuevo_apellido'] ?? '', 'El apellido', $errores, true, 100);
+        $_POST['nuevo_telefono']  = v_telefono($_POST['nuevo_telefono'] ?? '', 'El teléfono', $errores, true);
+        $_POST['nuevo_direccion'] = v_direccion($_POST['nuevo_direccion'] ?? '', $errores, false);
+    }
+
+    $eligioMotoExistente = !$esSoloMoto && $tipo_cliente === 'existente'
+                           && ($_POST['tipo_moto'] ?? 'nueva') === 'existente'
+                           && intval($_POST['id_moto_existente'] ?? 0) > 0;
+
+    if (!$eligioMotoExistente) {
+        $_POST['marca']       = v_alfanum($_POST['marca'] ?? '', 'La marca', $errores, true, 50);
+        $_POST['modelo']      = v_alfanum($_POST['modelo'] ?? '', 'El modelo', $errores, true, 100);
+        $_POST['color']       = (string) v_alfanum($_POST['color'] ?? '', 'El color', $errores, false, 30);
+        $_POST['anio']        = v_anio($_POST['anio'] ?? '', $errores);
+        $_POST['kilometraje'] = v_entero($_POST['kilometraje'] ?? '', 'El kilometraje', $errores, 0, 999999, 0);
+
+        $patenteCheck = trim($_POST['patente'] ?? '');
+        if ($patenteCheck === '') {
+            $errores[] = "La patente es obligatoria.";
+        } else {
+            $patenteOk = validarFormatoPatente($patenteCheck);
+            if (!$patenteOk) {
+                $errores[] = "La patente '" . $patenteCheck . "' no tiene un formato válido (ejemplos: A123BCD, OBJ123, 123ABC o AB123CD).";
+            } else {
+                $stmtDup0 = $pdo->prepare("SELECT id_moto FROM motos WHERE patente = :patente");
+                $stmtDup0->execute([':patente' => $patenteOk]);
+                if ($stmtDup0->fetch()) {
+                    $errores[] = "La patente $patenteOk ya está registrada en el sistema.";
+                }
+            }
+        }
+    }
+
+    if (!$esSoloMoto) {
+        $_POST['falla_reportada'] = v_texto($_POST['falla_reportada'] ?? '', 'La falla o arreglo a realizar', $errores, true, 3, 1000);
+        $_POST['fecha_prometida'] = v_fecha($_POST['fecha_prometida'] ?? '', 'La fecha prometida', $errores, FECHA_INICIO_SISTEMA, date('Y-m-d', strtotime('+1 year')));
+        $_POST['precio_estimado'] = v_decimal($_POST['precio_estimado'] ?? '', 'El precio estimado', $errores, 0, 99999999.99);
+        $_POST['estado']          = v_opcion($_POST['estado'] ?? '', ['En Espera', 'En Reparacion', 'Terminado', 'Entregado'], 'El estado', $errores, 'En Espera');
+    }
+
+    if (!empty($errores)) {
+        v_mostrar_errores($errores, 'No se guardó nada: hay datos inválidos');
+    }
 
     // ========================================================
     // PASO 1: PROCESAR CLIENTE / DUEÑO

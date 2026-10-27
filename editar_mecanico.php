@@ -50,17 +50,17 @@ if (!$mecanico) {
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Nombre y Apellido *</label>
-                                <input type="text" name="nombre" class="form-control" value="<?php echo htmlspecialchars($mecanico['nombre']); ?>" required>
+                                <input type="text" name="nombre" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{1,99}" title="Solo letras, espacios, apóstrofes y guiones (sin números)." class="form-control" value="<?php echo htmlspecialchars($mecanico['nombre']); ?>" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Teléfono</label>
-                                <input type="tel" name="telefono" class="form-control" value="<?php echo htmlspecialchars($mecanico['telefono'] ?? ''); ?>">
+                                <input type="tel" name="telefono" maxlength="20" inputmode="tel" pattern="\+?[0-9 \(\)\-.]{8,20}" title="Solo números (entre 8 y 15 dígitos). Podés usar espacios, guiones, paréntesis y + al inicio." class="form-control" value="<?php echo htmlspecialchars($mecanico['telefono'] ?? ''); ?>">
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Especialidad</label>
-                                <input type="text" name="especialidad" class="form-control" value="<?php echo htmlspecialchars($mecanico['especialidad'] ?? ''); ?>">
+                                <input type="text" name="especialidad" maxlength="100" class="form-control" value="<?php echo htmlspecialchars($mecanico['especialidad'] ?? ''); ?>">
                             </div>
 
                             <div class="mb-3">

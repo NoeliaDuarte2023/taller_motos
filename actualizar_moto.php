@@ -6,6 +6,7 @@
 // ========================================================
 
 require_once 'conexion.php';
+require_once 'validaciones.php';
 
 // Función para validar formato oficial de patente (Motos y Autos Argentina / Mercosur)
 if (!function_exists('validarFormatoPatente')) {
@@ -36,11 +37,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     }
 
     $patenteBruta = trim($_POST['patente'] ?? '');
-    $marca        = trim($_POST['marca'] ?? '');
-    $modelo       = trim($_POST['modelo'] ?? '');
-    $color        = trim($_POST['color'] ?? '');
-    $anio         = !empty($_POST['anio']) ? intval($_POST['anio']) : null;
-    $kilometraje  = !empty($_POST['kilometraje']) ? intval($_POST['kilometraje']) : 0;
+    // Validación de datos (ver validaciones.php)
+    $errores      = [];
+    $marca        = v_alfanum($_POST['marca'] ?? '', 'La marca', $errores, true, 50);
+    $modelo       = v_alfanum($_POST['modelo'] ?? '', 'El modelo', $errores, true, 100);
+    $color        = (string) v_alfanum($_POST['color'] ?? '', 'El color', $errores, false, 30);
+    $anio         = v_anio($_POST['anio'] ?? '', $errores);
+    $kilometraje  = v_entero($_POST['kilometraje'] ?? '', 'El kilometraje', $errores, 0, 999999, 0);
+    if (!empty($errores)) {
+        v_mostrar_errores($errores, 'Datos de la moto inválidos');
+    }
 
     if (empty($patenteBruta) || empty($marca) || empty($modelo)) {
         echo "<div style='font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 25px; border: 2px solid #fd7e14; border-radius: 10px; background-color: #fffaf5;'>";

@@ -1,14 +1,20 @@
 <?php
 require_once 'conexion.php';
+require_once 'validaciones.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $id_cliente = $_POST['id_cliente'] ?? '';
-    $nombre     = trim($_POST['nombre'] ?? '');
-    $apellido   = trim($_POST['apellido'] ?? '');
-    $telefono   = trim($_POST['telefono'] ?? '');
-    $email      = trim($_POST['email'] ?? null);
-    $direccion  = trim($_POST['direccion'] ?? null);
+    // Validación de datos (ver validaciones.php)
+    $errores   = [];
+    $nombre    = v_nombre($_POST['nombre'] ?? '', 'El nombre', $errores, true, 100);
+    $apellido  = v_nombre($_POST['apellido'] ?? '', 'El apellido', $errores, true, 100);
+    $telefono  = v_telefono($_POST['telefono'] ?? '', 'El teléfono', $errores, true);
+    $email     = v_email($_POST['email'] ?? '', $errores);
+    $direccion = v_direccion($_POST['direccion'] ?? '', $errores, false);
+    if (!empty($errores)) {
+        v_mostrar_errores($errores, 'Datos del cliente inválidos');
+    }
 
     if (!empty($id_cliente) && !empty($nombre) && !empty($apellido) && !empty($telefono)) {
         

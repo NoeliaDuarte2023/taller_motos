@@ -130,9 +130,7 @@ foreach ($entregadas as $ent) {
                             <!-- Header de la tarjeta -->
                             <div class="card-header bg-white border-bottom pt-3 pb-2 d-flex justify-content-between align-items-start">
                                 <div>
-                                    <span class="badge bg-dark badge-patente border border-secondary text-warning">
-                                        <?php echo htmlspecialchars($ent['patente']); ?>
-                                    </span>
+                                    <a href="historial_moto.php?id=<?php echo (int)$ent['id_moto']; ?>" class="text-decoration-none" title="Ver historial de esta moto"><span class="badge bg-dark badge-patente border border-secondary text-warning"><?php echo htmlspecialchars($ent['patente']); ?> <i class="bi bi-clock-history ms-1"></i></span></a>
                                     <h5 class="fw-bold mb-0 mt-2 text-dark">
                                         <?php echo htmlspecialchars($ent['marca'] . ' ' . $ent['modelo']); ?>
                                     </h5>

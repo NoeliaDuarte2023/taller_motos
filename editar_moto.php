@@ -96,27 +96,27 @@ $clientes = $pdo->query("SELECT id_cliente, nombre, apellido, telefono FROM clie
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Marca *</label>
-                                    <input type="text" name="marca" class="form-control" 
+                                    <input type="text" name="marca" maxlength="50" class="form-control" 
                                            value="<?php echo htmlspecialchars($moto['marca']); ?>" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Modelo *</label>
-                                    <input type="text" name="modelo" class="form-control" 
+                                    <input type="text" name="modelo" maxlength="100" class="form-control" 
                                            value="<?php echo htmlspecialchars($moto['modelo']); ?>" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Color</label>
-                                    <input type="text" name="color" class="form-control" 
+                                    <input type="text" name="color" maxlength="30" class="form-control" 
                                            value="<?php echo htmlspecialchars($moto['color'] ?? ''); ?>">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Año</label>
                                     <input type="number" name="anio" class="form-control" 
-                                           value="<?php echo htmlspecialchars($moto['anio'] ?? ''); ?>" min="1970" max="2030">
+                                           value="<?php echo htmlspecialchars($moto['anio'] ?? ''); ?>" min="1950" max="<?php echo date('Y') + 1; ?>">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Kilometraje Actual</label>
-                                    <input type="number" name="kilometraje" class="form-control" 
+                                    <input type="number" name="kilometraje" max="999999" class="form-control" 
                                            value="<?php echo htmlspecialchars($moto['kilometraje'] ?? '0'); ?>" min="0">
                                 </div>
                             </div>
