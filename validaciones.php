@@ -80,9 +80,9 @@ if (!function_exists('v_telefono')) {
         }
         $limpio = preg_replace('/[\s\-().]/', '', $v);
         if (!preg_match('/^\+?[0-9]{8,15}$/', $limpio)) {
-            $e[] = "$etq no es válido: debe tener entre 8 y 15 números (podés usar espacios, guiones, paréntesis y + al inicio). No se aceptan letras.";
+            $e[] = "Número de teléfono no válido (tiene que tener entre 8 y 15 números, sin letras; podés usar espacios, guiones, paréntesis y + al inicio).";
         } elseif (preg_match('/^\+?(\d)\1+$/', $limpio)) {
-            $e[] = "$etq no es válido: no puede ser un mismo número repetido.";
+            $e[] = "Número de teléfono no válido (no puede ser el mismo número repetido).";
         }
         return $limpio;
     }
@@ -110,11 +110,11 @@ if (!function_exists('v_direccion')) {
         $len = mb_strlen($v);
         $letras = preg_match_all('/\p{L}/u', $v);
         if ($len < 5 || $len > 200) {
-            $e[] = "La dirección debe tener entre 5 y 200 caracteres.";
+            $e[] = "Dirección no válida (tiene que tener entre 5 y 200 caracteres).";
         } elseif ($letras < 3) {
-            $e[] = "La dirección no es válida: debe incluir el nombre de la calle o barrio (con letras), por ejemplo: Av. San Martín 450.";
+            $e[] = "Dirección no válida (tiene que incluir el nombre de la calle o barrio, por ejemplo: Av. San Martín 450).";
         } elseif (!preg_match("/^[\p{L}0-9 .,°º#\/'\-]+$/u", $v)) {
-            $e[] = "La dirección tiene símbolos no permitidos. Usá letras, números y . , # / -";
+            $e[] = "Dirección no válida (usá solo letras, números y . , # / -).";
         }
         return $v;
     }

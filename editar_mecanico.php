@@ -87,5 +87,6 @@ if (!$mecanico) {
         </div>
     </div>
 
+    <script src="validar_campos.js"></script>
 </body>
 </html>

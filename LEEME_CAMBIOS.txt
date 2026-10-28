@@ -53,3 +53,11 @@ En nueva_moto.php y editar_trabajo.php aparece también como min="2026-08-01".
 - historial_moto.php (nuevo): al hacer clic en la patente se ve la ficha de la moto,
   su dueño y todos sus trabajos (falla, arreglo, repuestos, fechas, precios, estado).
 - motos.php, trabajos.php y entregadas.php: la patente ahora es un enlace al historial.
+
+== NUEVO: carteles rojos en teléfono y dirección ==
+- validar_campos.js (nuevo): al escribir un teléfono o una dirección incorrectos aparece,
+  debajo del campo, un cartel rojo: «Número de teléfono no válido» / «Dirección no válida».
+  Hay que copiarlo a la misma carpeta que los .php.
+- Si igual llega al servidor, el mensaje rojo también dice «Número de teléfono no válido»
+  o «Dirección no válida» (validaciones.php).
+- Aplica a: nuevo/editar cliente, nuevo/editar mecánico y el cliente nuevo dentro de «nueva moto».
