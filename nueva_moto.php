@@ -106,8 +106,8 @@ if ($motoPreseleccionada > 0 && $clientePreseleccionado === 0) {
                                     <label class="form-label fw-semibold text-dark">
                                         Seleccionar Cliente:
                                     </label>
-                                    <select name="id_cliente_existente" id="selectCliente" class="form-select form-select-lg" onchange="alSeleccionarCliente()">
-                                        <option value="">-- Buscar por Nombre o Apellido --</option>
+                                    <select name="id_cliente_existente" id="selectCliente" data-buscable="1" class="form-select form-select-lg" onchange="alSeleccionarCliente()">
+                                        <option value="">-- Elegí un cliente de la lista --</option>
                                         <?php foreach ($clientes as $cli): ?>
                                             <option value="<?php echo $cli['id_cliente']; ?>"
                                                     <?php echo ($clientePreseleccionado === intval($cli['id_cliente'])) ? 'selected' : ''; ?>
@@ -409,5 +409,6 @@ if ($motoPreseleccionada > 0 && $clientePreseleccionado === 0) {
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="validar_campos.js"></script>
+    <script src="buscar_cliente.js"></script>
 </body>
 </html>

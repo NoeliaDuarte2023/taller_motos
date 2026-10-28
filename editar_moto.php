@@ -73,7 +73,7 @@ $clientes = $pdo->query("SELECT id_cliente, nombre, apellido, telefono FROM clie
                             <!-- Dueño actual -->
                             <div class="mb-4 p-3 bg-light rounded-3 border">
                                 <label class="form-label fw-bold text-dark">Cliente Dueño del Vehículo *</label>
-                                <select name="id_cliente" class="form-select form-select-lg" required>
+                                <select name="id_cliente" data-buscable="1" class="form-select form-select-lg" required>
                                     <?php foreach ($clientes as $cli): ?>
                                         <option value="<?php echo $cli['id_cliente']; ?>" <?php echo ($cli['id_cliente'] == $moto['id_cliente']) ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($cli['apellido'] . ', ' . $cli['nombre'] . ' (Tel: ' . $cli['telefono'] . ')'); ?>
@@ -140,5 +140,6 @@ $clientes = $pdo->query("SELECT id_cliente, nombre, apellido, telefono FROM clie
 
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="buscar_cliente.js"></script>
 </body>
 </html>
